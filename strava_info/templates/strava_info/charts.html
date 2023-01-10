@@ -35,13 +35,17 @@
         </div>
     </div>
     <div class="row justify-content-start">
+        <br>
+        <br>
+    </div>
+    <div class="row justify-content-start">
         <div class="col-11">
             <div>
                 <canvas id="monthly_chart" data-url="{% url 'strava_info:charts_data' act_type metric 'monthly' %}" aria-label="Bar chart" role="img"></canvas>
             </div>
         </div>
         <div class="col-1">
-            <div class="dropdown">
+            {% comment %} <div class="dropdown">
                 <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Switch Metric
                 </a>
@@ -52,7 +56,7 @@
                         {% endfor %}
                 </ul>
             </div>
-            {% comment %} <div class="dropdown">
+            <div class="dropdown">
                 <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Switch Timeframe
                 </a>
@@ -62,9 +66,9 @@
                             <li><a class="dropdown-item" href="{% url 'strava_info:charts' act_type metric tf %}">{{tf}}</a></li>
                         {% endfor %}
                 </ul>
-            </div> {% endcomment %}
+            </div>
             <p>Click on label to remove item from chart.</p>
-        </div>
+        </div> {% endcomment %}
     </div>
 </div>
 
@@ -156,7 +160,11 @@
                       animation : true,
                       plugins: {
                           legend: {
-                            display: true
+                            display: true,
+                            title : {
+                                text : "Click on a year to remove it from the chart",
+                                display : true
+                            }
                           },
                           tooltip: {
                             enabled: true
