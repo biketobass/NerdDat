@@ -41,7 +41,7 @@
                       </a>
                       <ul class="dropdown-menu dropdown-menu-dark">
                         {% for t in type_list %}
-                          <li><a class="dropdown-item" href="{% url 'strava_info:charts' t metric time_span %}">{{t}}</a></li>
+                          <li><a class="dropdown-item" href="{% url 'strava_info:charts' t metric %}">{{t}}</a></li>
                         {% endfor %}
                       </ul>
                     </li>

@@ -519,25 +519,25 @@ def suggest_similar_activities(request, *, elev_gain=None, distance=None, dist_f
             
     return render(request, 'strava_info/search_strava_data.html', context)
 
-@login_required
-def annual_charts(request, act_type) :
-    acts_qs = StravaActivity.objects.filter(site_user=request.user)
-    acts_qs = acts_qs.filter(type=act_type)
-    start_year = acts_qs.aggregate(Min("start_date")).get("start_date__min").year
-    end_year = acts_qs.aggregate(Max("start_date")).get("start_date__max").year
-    labels = [ str(y) for y in range(start_year, end_year+1)]
-    data = []
-    acts_qs = acts_qs.values("start_date__year").annotate(miles_per_year=Sum('distance_miles')).order_by('start_date__year')
-    for a in acts_qs :
-        data.append(a['miles_per_year'])
-    context = {}
-    context["act_type"] = act_type
-    context["type_list"] = get_strava_activity_type_list(request.user)
-    context["metric"] = "distance"
-    context["time_span"] = "monthly"
-    context["labels"] = labels
-    context["data"] = data
-    return render(request, 'strava_info/annual_charts.html', context)
+# @login_required
+# def annual_charts(request, act_type) :
+#     acts_qs = StravaActivity.objects.filter(site_user=request.user)
+#     acts_qs = acts_qs.filter(type=act_type)
+#     start_year = acts_qs.aggregate(Min("start_date")).get("start_date__min").year
+#     end_year = acts_qs.aggregate(Max("start_date")).get("start_date__max").year
+#     labels = [ str(y) for y in range(start_year, end_year+1)]
+#     data = []
+#     acts_qs = acts_qs.values("start_date__year").annotate(miles_per_year=Sum('distance_miles')).order_by('start_date__year')
+#     for a in acts_qs :
+#         data.append(a['miles_per_year'])
+#     context = {}
+#     context["act_type"] = act_type
+#     context["type_list"] = get_strava_activity_type_list(request.user)
+#     context["metric"] = "distance"
+#     context["time_span"] = "monthly"
+#     context["labels"] = labels
+#     context["data"] = data
+#     return render(request, 'strava_info/annual_charts.html', context)
 
 @login_required
 def monthly_charts(request, act_type, metric) :
@@ -592,11 +592,11 @@ def monthly_charts_data(request, act_type, metric) :
     })
     
 @login_required
-def charts(request, act_type, metric, time_span) :
+def charts(request, act_type, metric) :
     context = {}
     context["act_type"] = act_type
     context["metric"] = metric
-    context["time_span"] = time_span
+    #context["time_span"] = time_span
     context["type_list"] = get_strava_activity_type_list(request.user)
     context["metrics"] = ["distance", "moving_time", "elevation_gain"]
     context["time_spans"] = ["monthly", "annual"]
@@ -762,5 +762,5 @@ def get_base_context(request) :
     context = {}
     context["type_list"] = get_strava_activity_type_list(request.user)
     context["metric"] = "distance"
-    context["time_span"] = "monthly"
+    #context["time_span"] = "monthly"
     return context

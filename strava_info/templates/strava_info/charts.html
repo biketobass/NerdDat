@@ -6,7 +6,7 @@
     <div class="row justify-content-start">
         <div class="col-11">
             <div>
-                <canvas id="chart" data-url="{% url 'strava_info:charts_data' act_type metric time_span %}" aria-label="Bar chart" role="img"></canvas>
+                <canvas id="annual_chart" data-url="{% url 'strava_info:charts_data' act_type metric 'annual' %}" aria-label="Bar chart" role="img"></canvas>
             </div>
         </div>
         <div class="col-1">
@@ -17,11 +17,11 @@
               
                 <ul class="dropdown-menu">
                         {% for m in metrics %}
-                            <li><a class="dropdown-item" href="{% url 'strava_info:charts' act_type m time_span %}">{{m}}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'strava_info:charts' act_type m %}">{{m}}</a></li>
                         {% endfor %}
                 </ul>
             </div>
-            <div class="dropdown">
+            {% comment %} <div class="dropdown">
                 <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Switch Timeframe
                 </a>
@@ -31,7 +31,38 @@
                             <li><a class="dropdown-item" href="{% url 'strava_info:charts' act_type metric tf %}">{{tf}}</a></li>
                         {% endfor %}
                 </ul>
+            </div> {% endcomment %}
+        </div>
+    </div>
+    <div class="row justify-content-start">
+        <div class="col-11">
+            <div>
+                <canvas id="monthly_chart" data-url="{% url 'strava_info:charts_data' act_type metric 'monthly' %}" aria-label="Bar chart" role="img"></canvas>
             </div>
+        </div>
+        <div class="col-1">
+            <div class="dropdown">
+                <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Switch Metric
+                </a>
+              
+                <ul class="dropdown-menu">
+                        {% for m in metrics %}
+                            <li><a class="dropdown-item" href="{% url 'strava_info:charts' act_type m %}">{{m}}</a></li>
+                        {% endfor %}
+                </ul>
+            </div>
+            {% comment %} <div class="dropdown">
+                <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Switch Timeframe
+                </a>
+              
+                <ul class="dropdown-menu">
+                        {% for tf in time_spans %}
+                            <li><a class="dropdown-item" href="{% url 'strava_info:charts' act_type metric tf %}">{{tf}}</a></li>
+                        {% endfor %}
+                </ul>
+            </div> {% endcomment %}
             <p>Click on label to remove item from chart.</p>
         </div>
     </div>
@@ -43,7 +74,65 @@
 <script>
 
     $(function () {
-        var $chart = $("#chart");
+        var $chart = $("#annual_chart");
+        
+        $.ajax({
+            url: $chart.data("url"),
+            success: function (data) {
+                var mydatasets = [];
+                if (data.datasets.length == 1) {
+                    mydatasets.push({label: data.single_label, data:data.datasets[0]});
+                } else {
+                    for(var j = 0; j < data.datasets.length; j++) {
+                        mydatasets.push({label: data.years[j], data: data.datasets[j]});
+                    }
+                }
+                var ctx = $chart[0].getContext("2d");
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                      labels: data.labels,
+                      datasets: mydatasets
+                    },
+                    options: {
+                      animation : true,
+                      plugins: {
+                          legend: {
+                            display: false
+                          },
+                          tooltip: {
+                            enabled: true
+                          },
+                          colors: {
+                              enabled : true
+                          },
+                          title: {
+                              display: true,
+                              text: data.title_text
+                          }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          title : {
+                              display: true, 
+                              text : data.scale_title
+                          }
+                        }
+                      }
+                    }
+                });
+            }
+        })
+    })
+
+    
+  </script>
+
+  <script>
+
+    $(function () {
+        var $chart = $("#monthly_chart");
         
         $.ajax({
             url: $chart.data("url"),
