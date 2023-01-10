@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <h1>Welcome back, {{ user.username}}</h1>
+        {% if user.stravauser.is_strava_verified %}
+                {% if user.stravauser.has_completed_initial_download %}
+                    <div class="container text-left">
+                        <div class="row">
+                            <div class="col">
+                                <p>Your most recent five activities were:</p>
+                                {% for act in most_recent %}
+                                    <p><a href="https://www.strava.com/activities/{{act.activity_id}}">{{act.name}} on {{act.start_date}}</a></p> 
+                                {% endfor %}
+                            </div>
+                            <div class="col">
+                                <div class="container text-center">
+                                    {% comment %} <div class="row">
+                                        <div class="col">
+                                            <a class="btn btn-primary" href="{% url 'strava_info:update_strava_data' %}" role="button">Update</a>
+                                        </div>
+                                        <div class="col">
+                                            <a class="btn btn-primary" href="{% url 'strava_info:delete_strava_data' %}" role="button">Delete Your Data</a>
+                                        </div>
+                                    </div> {% endcomment %}
+                                    <div class="row">
+                                        <div class="col">
+                                            <div>
+                                                <canvas id="pie_chart" data-url="{% url 'strava_info:pie_chart_data' %}" aria-label="Pie chart" role="img"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                    <script>
+
+                        $(function () {
+                            var $chart = $("#pie_chart");
+                            
+                            $.ajax({
+                                url: $chart.data("url"),
+                                success: function (data) {
+                                    var ctx = $chart[0].getContext("2d");
+                                    new Chart(ctx, {
+                                        type: 'pie',
+                                        data: {
+                                            labels: data.labels,
+                                            datasets: [{
+                                                data: data.data
+                                            }]
+                                        },
+                                        options: {
+                                            animation : true,
+                                            plugins: {
+                                                legend: {
+                                                    display: true
+                                                },
+                                                tooltip: {
+                                                    enabled: true
+                                                },
+                                                colors: {
+                                                    enabled : true
+                                                },
+                                                title: {
+                                                    display: true,
+                                                    text: data.title_text
+                                                }
+                                            },
+                                        }
+                                    });
+                                }
+                            })
+                        })
+
+                        
+                    </script>
+
+
+
+                {% else %}
+                    <div class="container text-center">
+                        <div class="row">
+                            <div class="col">
+                                Download your Strava Data to get started.       
+                            </div>
+                            <div class="col">
+                                <a class="btn btn-primary" href="{% url 'strava_info:get_strava_data' %}" role="button">Download Strava Data</a>
+                            </div>
+                        </div>
+                    </div>
+            {% endif %}
+        {% else %}
+            <p>Dude, you need to OAuth</p>
+        {% endif %}        
+
+    {% else %}
+        <div class="row">
+            <div class="col-sm-3">
+            </div>
+            <div class="col-sm-6">
+                <div class="card border-dark mb-3" style="width: 18rem;">
+                    <img src="{% static 'images/logo_cropped.jpeg' %}" class="card-img-top" alt="Fitness App Logo">
+                    <div class="card-body">
+                        <h5 class="card-title">Login or Register</h5>
+                        <p class="card-text">Welcome. Please login to your account or register.</p>
+                        <a class="btn btn-success" href="{% url 'users_app:login' %}" role="button">Login</a>
+                        <a class="btn btn-primary" href="{% url 'users_app:register' %}" role="button">Register</a>
+                    </div>
+                </div>
+            <div class="col-sm-3">
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

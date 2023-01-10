@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% comment %} <div id="container" style="width: 75%;">
+    <canvas id="strava-chart" data-url="{% url 'strava_info:monthly_charts_data' act_type %}"></canvas>
+</div> {% endcomment %}
+
+<div style="width: 75%;">
+    <canvas id="stravaChart" aria-label="Annual bar chart" role="img"></canvas>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctx = document.getElementById('stravaChart');
+  
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: {{labels | safe}},
+        datasets: [{
+          label: '# of miles',
+          data: {{data | safe}},
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+
+{% endblock content %}

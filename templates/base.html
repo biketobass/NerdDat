@@ -1,0 +1,85 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% block title %}
+        <title>Fitness Data Synthesis</title>
+    {% endblock %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="{% url 'index' %}"><img src="{% static 'images/logo_cropped_small.jpeg' %}" alt="Fitness Logo"></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNavAltMarkupSummaries">
+            <div class="navbar-nav">
+              <a class="nav-link" aria-current="page" href="{% url 'index' %}">Home</a>
+              {% if user.is_authenticated and user.stravauser.is_strava_verified and user.stravauser.has_completed_initial_download%}
+                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
+                  <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        View Activity Annual Summaries
+                      </a>
+                      <ul class="dropdown-menu dropdown-menu-dark">
+                        {% for t in type_list %}
+                          <li><a class="dropdown-item" href="{% url 'strava_info:analyze_activity_type' t %}">{{t}}</a></li>
+                        {% endfor %}
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
+                <div class="collapse navbar-collapse" id="navbarNavDarkDropdownCharts">
+                  <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Charts
+                      </a>
+                      <ul class="dropdown-menu dropdown-menu-dark">
+                        {% for t in type_list %}
+                          <li><a class="dropdown-item" href="{% url 'strava_info:charts' t metric time_span %}">{{t}}</a></li>
+                        {% endfor %}
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
+                <a class="nav-link" aria-current="page" href="{% url 'strava_info:search_strava_data' %}">Search for Activities that Meet Criteria</a>
+                {% if user.is_authenticated and user.stravauser.is_strava_verified and user.stravauser.has_completed_initial_download  %}
+                  <a class="nav-link" aria-current="page" href="{% url 'strava_info:strava_settings' %}">Settings</a>
+                {% endif %}   
+              </div>
+            {% endif %}
+          </div>
+          {% if user.is_authenticated %}
+            <div class="d-flex">
+              <div class="p-2 bg-dark text-white">Logged in as {{ user.username }}</div>
+              <a class="btn btn-info" href="{% url 'users_app:logout' %}" role="button">Logout</a>
+            </div>
+          {% else %}
+            <div class="d-grid gap-2 d-md-block">
+              <a class="btn btn-success" href="{% url 'users_app:login' %}" role="button">Login</a>
+              <a class="btn btn-primary" href="{% url 'users_app:register' %}" role="button">Register</a>
+            </div>
+          {% endif %}
+        </div>
+      </nav>
+  </head>
+  <body>
+    {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {{ message}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% block content %}
+        <h1>Hello, world!</h1>
+    {% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+  </body>
+</html>

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container text-center">
+    <div class="row justify-content-start">
+        <div class="col-11">
+
+            {% comment %} <div style="width: 75%;"> {% endcomment %}
+            <div>
+                <canvas id="monthlyChart" data-url="{% url 'strava_info:monthly_charts_data' act_type metric %}" aria-label="Monthly bar chart" role="img"></canvas>
+            </div>
+        </div>
+        <div class="col-1">
+            <div class="dropdown">
+                <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Switch Metric
+                </a>
+              
+                <ul class="dropdown-menu">
+                        {% for m in metrics %}
+                                <li><a class="dropdown-item" href="{% url 'strava_info:monthly_charts' act_type m %}">{{m}}</a></li>
+                        {% endfor %}
+                </ul>
+        </div>
+            
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+    $(function () {
+        var $chart = $("#monthlyChart");
+        
+        $.ajax({
+            url: $chart.data("url"),
+            success: function (data) {
+                var mydatasets = [];
+                for(var j = 0; j < data.datasets.length; j++) {
+                    mydatasets.push({label: data.years[j], data: data.datasets[j]});
+                }
+                var ctx = $chart[0].getContext("2d");
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                      labels: data.labels,
+                      datasets: mydatasets
+                    },
+                    options: {
+                      animation : true,
+                      plugins: {
+                          legend: {
+                            display: true
+                          },
+                          tooltip: {
+                            enabled: true
+                          },
+                          colors: {
+                              enabled : true
+                          },
+                          title: {
+                              display: true,
+                              text: data.title_text
+                          }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          title : {
+                              display: true, 
+                              text : data.scale_title
+                          }
+                        }
+                      }
+                    }
+                });
+            }
+        })
+    })
+
+    {% comment %} const ctx = document.getElementById('monthlyChart');
+  
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: {{labels | safe}},
+        datasets: [
+            {% for year,set in datazip %}
+                {
+                    label: {{year}},
+                    data: {{set}},
+                },
+            {% endfor %}
+        ]       
+      },
+      options: {
+        animation : true,
+        plugins: {
+            legend: {
+              display: true
+            },
+            tooltip: {
+              enabled: true
+            },
+            colors: {
+                enabled : true
+            },
+            title: {
+                display: true,
+                text: 'Monthly {{act_type}} Total Distance Comparisons'
+            }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title : {
+                display: true, 
+                text :"Miles per month"
+            }
+          }
+        }
+      }
+    }); {% endcomment %}
+  </script>
+
+{% endblock content %}

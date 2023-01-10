@@ -14,8 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from strava_info import views as strava_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', strava_views.index, name='index'),
+    path('strava_info/', include('strava_info.urls')),
+    path('account/', include('users_app.urls')),
 ]

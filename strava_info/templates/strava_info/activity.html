@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% comment %} {% load humanize %} {% endcomment %}
+
+{% block content %}
+<br>
+<div class="container">
+    <div class="row">
+            <div class="col text-start">
+                {% comment %} <div class="dropdown">
+                    <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      Switch Activity
+                    </a>
+                  
+                    <ul class="dropdown-menu">
+                            {% for t in type_list %}
+                                    <li><a class="dropdown-item" href="{% url 'strava_info:analyze_activity_type' t %}">{{t}}</a></li>
+                            {% endfor %}
+                    </ul>
+                </div> {% endcomment %}
+            </div>
+            <div class="col text-center">
+                <h3>Annual {{act_type}} Stats</h3>                    
+            </div>
+            <div class="col text-end">
+                {% comment %} {% if user.stravauser.preferred_units == "imperial" %}
+                    <a class="btn btn-primary" href="{% url 'strava_info:switch_units' %}" role="button">Switch to Metic Units</a>
+                {% else %}
+                    <a class="btn btn-primary" href="{% url 'strava_info:switch_units' %}" role="button">Switch to Imperial Units</a>
+                {% endif %}           {% endcomment %}
+            </div>
+    </div>
+</div>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Metric</th>
+                {% for dict in year_list %}
+                    <th scope="col">{{dict.year}}</th>
+                {% endfor %}
+                <th scope="col">Totals (or Max/Date)</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for heading, row, tot in summary_table_rows %}
+                <tr>
+                    <th class="table-secondary" scope="row">{{heading}}</th>
+                    {% if "Date" in heading %}
+                        {% for val in row %}
+                            <td><a href="https://www.strava.com/activities/{{val.0}}">{{val.1}}</a></td>
+                        {% endfor %}
+                        <td class="table-primary"><a href="https://www.strava.com/activities/{{tot.0}}">{{tot.1}}</a></td>
+                    {% else %}
+                        {% for val in row %}
+                            <td>{{val}}</td>
+                        {% endfor %}
+                        <td class="table-primary">{{tot}}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+              <!--For tabbing -->
+              {% comment %} <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-summary" data-bs-toggle="tab" data-bs-target="#tab-pane-summary" type="button" role="tab" aria-controls="tab-pane-summary" aria-selected="true">Summary</button>
+                </li>
+                {% for dict in year_list %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-{{dict.year}}" data-bs-toggle="tab" data-bs-target="#tab-pane-{{dict.year}}" type="button" role="tab" aria-controls="tab-pane-{{dict.year}}" aria-selected="false">{{dict.year}}</button>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="tab-pane-summary" role="tabpanel" aria-labelledby="tab-summary" tabindex="0">
+                    <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th scope="col">Metric</th>
+                            {% for dict in year_list %}
+                                <th scope="col">{{dict.year}}</th>
+                            {% endfor %}
+                            <th scope="col">Totals (or Max/Date)</th>
+                          </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                            {% for heading, row, tot in summary_table_rows %}
+                                <tr>
+                                    <th class="table-secondary" scope="row">{{heading}}</th>
+                                    {% if "Date" in heading %}
+                                        {% for val in row %}
+                                            <td><a href="https://www.strava.com/activities/{{val.0}}">{{val.1}}</a></td>
+                                        {% endfor %}
+                                        <td class="table-primary"><a href="https://www.strava.com/activities/{{tot.0}}">{{tot.1}}</a></td>
+                                    {% else %}
+                                        {% for val in row %}
+                                            <td>{{val}}</td>
+                                        {% endfor %}
+                                        <td class="table-primary">{{tot}}</td>
+                                    {% endif %}
+                                    
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                      </table>
+                </div>
+                {% for dict in year_list %}
+                    <div class="tab-pane fade" id="tab-pane-{{dict.year}}" role="tabpanel" aria-labelledby="tab-{{dict.year}}" tabindex="0">{{dict.year}}</div>
+                {% endfor %}
+            </div> {% endcomment %}
+    
+{% endblock %}

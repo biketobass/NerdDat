@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <form action="{% url 'strava_info:search_strava_data' %}" method="GET">
+                    {% csrf_token %}
+                    {% comment %} {{ form|crispy }} {% endcomment %}
+                    {% crispy form %}
+                    {% comment %} <input type="submit" value="Submit"> {% endcomment %}
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+            </div>
+            <div class="col">
+                
+            </div>
+        </div>
+    {% if results %}
+    <br>
+        <div class="container">
+            <div class="row">
+                    <div class="col text-start">
+                        <a class="btn btn-primary" href="{% url 'strava_info:search_strava_data' %}" role="button">Clear Search</a>
+                    </div>
+                    <div class="col text-center">
+                        <h3>Search Results</h3>                    
+                    </div>
+                    <div class="col text-end">
+                        
+                    </div>
+            </div>
+        </div>
+        
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Activity Title and URL</th>
+                    <th scope="col">Distance</th>
+                    <th scope="col">Elevation Gain</th>
+                    <th scope="col">Elapsed Time</th>
+                    <th scope="col">Moving Time</th>
+                    <th scope="col">Date</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                {% for r in results %}
+                    <tr>
+                        <td><a href="https://www.strava.com/activities/{{r.id}}">{{r.name}}</a></td>
+                        <td>{{r.dist}}</td>
+                        <td>{{r.elev}}</td>
+                        <td>{{r.elapsed}}min</td>
+                        <td>{{r.moving}}min</td>
+                        <td>{{r.date}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Please fill in at least one field</p>
+    {% endif %}
+
+
+{% endblock%}
