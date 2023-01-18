@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container text-center">
+    {% for y in year_list %}
+        {% if forloop.counter0|divisibleby:3 %}
+            <div class="row justify-content-start">
+        {% endif %}
+                <div class="col-4">
+                    <div>
+                        <canvas id="pie_chart{{y}}" data-url="{% url 'strava_info:annual_pie_chart_data' y %}" aria-label="Bar chart" role="img"></canvas>
+                    </div>
+                </div>
+        {% if forloop.counter|divisibleby:3 %}
+            </div>
+            <div class="row">
+                <br><br>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    
+    {% for y in year_list %}
+        <script>
+            Chart.register(ChartDataLabels);
+            $(function () {
+                var $chart = $("#pie_chart{{y}}");
+                $.ajax({
+                    url: $chart.data("url"),
+                    success: function (data) {
+                        var ctx = $chart[0].getContext("2d");
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    data: data.data,
+                                    backgroundColor: data.colors
+                                }]
+                            },
+                            options: {
+                                animation : true,
+                                plugins: {
+                                    legend: {
+                                        display: true
+                                    },
+                                    tooltip: {
+                                        enabled: true
+                                    },
+                                    colors: {
+                                        enabled : true
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: data.title_text
+                                    },
+                                    datalabels: {
+                                        font: {
+                                            weight: 'bold'
+                                        },
+                                        anchor: 'center',
+                                        align: 'center',
+                                        formatter: function(value, context) {
+                                            return value+'%'
+                                        }
+                                    }
+                                },
+                            }
+                        });
+                    }
+                })
+            })
+
+            
+        </script>
+    {% endfor %}
+
+{% endblock content %}

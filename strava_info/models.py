@@ -12,6 +12,7 @@ class StravaUser(models.Model):
     is_strava_verified = models.BooleanField(default=False)
     has_completed_initial_download = models.BooleanField(default=False)
     preferred_units = models.CharField(max_length=10, default="imperial")
+    pie_color_palette = models.JSONField(default=dict)
     
 class StravaActivity(models.Model) :
     site_user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)

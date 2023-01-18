@@ -10,7 +10,8 @@ from django.conf import settings
 import time
 from dateutil import parser
 import pytz
-
+import math
+import distinctipy
 
 # Helper method for saving strava data after downloading
 
@@ -168,9 +169,12 @@ def download_strava_data(request, start_from=None) :
 
     # Now that you have it all, save it.
     save_strava_data(results, request.user)
-
     su.has_completed_initial_download = True
     su.save()
+    # Here we need to update the user's pie chart color dictionary.
+    su.pie_color_palette = compute_pie_colors(request.user)
+    su.save()
+
     if not start_from :
         messages.success(request, "Sucessfully downloaded!")
     else :
@@ -207,7 +211,7 @@ def check_and_refresh_access_token(stravauser) :
 @login_required
 def update_strava_data(request) :
     user = request.user
-    su = user.stravauser
+    #su = user.stravauser
     most_recent = StravaActivity.objects.filter(site_user=request.user).order_by('-start_date')[0]
     most_recent_date = most_recent.start_date
     try :
@@ -741,17 +745,120 @@ def pie_chart_data(request) :
     acts_qs = acts_qs.values("type").annotate(total_moving_time=Sum('moving_time_sec'))
     data=[]
     labels=[]
+    colors = []
+    colors_dict = request.user.stravauser.pie_color_palette
     for a in acts_qs :
         #data.append(round(a['total_moving_time']/all_moving_time))
         #data.append(round(a['total_moving_time']))
         perc = round((a['total_moving_time']/all_moving_time)*100)
         data.append(perc)
         labels.append("Percent " + a["type"])
+        colors.append(colors_dict[a["type"]])
     return JsonResponse(data={
         'data' : data,
         'labels' : labels,
-        'title_text' : "Percentage of total moving time of each activity type you've ever recorded on Strava"
+        'title_text' : "Percentage of total moving time of each activity type you've ever recorded on Strava",
+        'colors' : colors
     })
+
+@login_required
+def annual_charts(request) :
+    context = get_base_context(request)
+    # We're going to want a pie chart for each year. That means we are going to create
+    # a canvas in the html for each year. Get the list of years.
+    acts_qs = StravaActivity.objects.filter(site_user=request.user)
+    year_list = sorted(acts_qs.values_list("start_date__year", flat=True).distinct())
+    context["year_list"] = year_list
+    return render(request, 'strava_info/piecharts.html', context)
+
+    
+@login_required
+def annual_pie_chart_data(request, year) :
+    acts_qs = StravaActivity.objects.filter(site_user=request.user, start_date__year=year)
+    # For each activity type sum the moving time for that activity and compute the percentage that is of the whole.
+    all_moving_time = acts_qs.aggregate(Sum('moving_time_sec')).get('moving_time_sec__sum')
+    acts_qs = acts_qs.values("type").annotate(total_moving_time=Sum('moving_time_sec'))
+    data=[]
+    labels=[]
+    colors = []
+    colors_dict = request.user.stravauser.pie_color_palette
+    #colors_dict = compute_pie_colors(request.user)
+    for a in acts_qs :
+        #data.append(round(a['total_moving_time']/all_moving_time))
+        #data.append(round(a['total_moving_time']))
+        perc = round((a['total_moving_time']/all_moving_time)*100)
+        data.append(perc)
+        labels.append("Percent " + a["type"])
+        colors.append(colors_dict[a["type"]])
+    return JsonResponse(data={
+        'data' : data,
+        'labels' : labels,
+        'title_text' : "Percentage of total moving time of each activity type you recorded on Strava in " + str(year),
+        'colors' : colors
+    })
+    
+def compute_pie_colors(user) :
+    default_colors = [(54/255, 162/255, 235/255),(255/255, 99/255, 132/255), (255/255, 159/255, 64/255), (255/255, 205/255, 86/255),
+                      (75/255, 192/255, 192/255), (153/255, 102/255, 255/255), (201/255, 203/255, 207/255)]
+    #default_colors = ["#36A2EB","#FF6384","#FF9F40","#FFCD56","#4BC0C0","#9966FF","#C9CBCF"]
+    WHITE = (1.0, 1.0, 1.0)
+    BLACK = (0.0, 0.0, 0.0)
+    white_black = [WHITE, BLACK]
+    exclude_cols = default_colors + white_black
+    types = get_strava_activity_type_list(user)
+    n = len(types)
+    colors = {}
+    if n <= len(default_colors) :
+        list_of_colors = default_colors
+    else :
+        list_of_colors = default_colors + distinctipy.get_colors(n-len(default_colors), exclude_colors=exclude_cols, pastel_factor=0.7)
+    for i,t in enumerate(types) :
+        c = list_of_colors[i]
+        colors[t] = "#" + hex_val(c[0])+hex_val(c[1])+hex_val(c[2])
+    return colors
+
+def hex_val(y) :
+    # Deal with the fact that distinipy uses rgb values from 0 to 1.
+    y = round(y*255)
+    partial_hex_table = {10:"A", 11:"B", 12:"C", 13:"D", 14:"E", 15:"F"}
+    l = y//16
+    r = y%16
+    if r < 10 :
+        r = str(r)
+    else :
+        r = partial_hex_table[r]
+            
+    if l < 10 :
+        l = str(l)
+    else :
+        l = partial_hex_table[l]
+    return l+r 
+    
+    
+    # acts_qs = StravaActivity.objects.filter(site_user=request.user)
+    # # For each activity type sum the moving time for that activity and compute the percentage that is of the whole.
+    # year_list = sorted(acts_qs.values_list("start_date__year", flat=True).distinct())
+    # datasets = []
+    # labelsets = []
+    # titlesets = []
+    # for y in year_list :
+    #     y_acts = acts_qs.filter(start_date__year=y)
+    #     all_moving_time = y_acts.aggregate(Sum('moving_time_sec')).get('moving_time_sec__sum')
+    #     y_acts = y_acts.values("type").annotate(total_moving_time=Sum('moving_time_sec'))
+    #     data=[]
+    #     labels=[]
+    #     for a in y_acts :
+    #         perc = round((a['total_moving_time']/all_moving_time)*100)
+    #         data.append(perc)
+    #         labels.append("Percent " + a["type"])
+    #     datasets.append(data)
+    #     labelsets.append(labels)
+    #     titlesets.append("Percentage of total moving time of each activity type you recorded on Strava in " + str(y))
+    # return JsonResponse(data={
+    #     'datasets' : datasets,
+    #     'labelsets' : labelsets,
+    #     'titlesets' : titlesets
+    # })
     
 @login_required
 def strava_settings(request) :

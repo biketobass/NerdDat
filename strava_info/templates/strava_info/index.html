@@ -38,8 +38,10 @@
 
                     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
                     <script>
+                        Chart.register(ChartDataLabels);
 
                         $(function () {
                             var $chart = $("#pie_chart");
@@ -53,7 +55,8 @@
                                         data: {
                                             labels: data.labels,
                                             datasets: [{
-                                                data: data.data
+                                                data: data.data,
+                                                backgroundColor: data.colors
                                             }]
                                         },
                                         options: {
@@ -71,6 +74,16 @@
                                                 title: {
                                                     display: true,
                                                     text: data.title_text
+                                                },
+                                                datalabels: {
+                                                    font: {
+                                                        weight: 'bold'
+                                                    },
+                                                    anchor: 'center',
+                                                    align: 'center',
+                                                    formatter: function(value, context) {
+                                                        return value+'%'
+                                                    }
                                                 }
                                             },
                                         }
