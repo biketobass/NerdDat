@@ -728,13 +728,15 @@ def get_annual_chart_data(request, act_type, metric) :
     for a in acts_qs :
         data.append(a['metric_per_year'])
     datasets.append(data)
+    color = request.user.stravauser.pie_color_palette[act_type]
     
     return JsonResponse(data={
         'labels': labels,
         'datasets' : datasets,
         'single_label': data_label,
         'title_text' : title_text,
-        'scale_title' : scale_title
+        'scale_title' : scale_title,
+        'color': color
     })        
 
 @login_required
@@ -752,7 +754,7 @@ def pie_chart_data(request) :
         #data.append(round(a['total_moving_time']))
         perc = round((a['total_moving_time']/all_moving_time)*100)
         data.append(perc)
-        labels.append("Percent " + a["type"])
+        labels.append(a["type"])
         colors.append(colors_dict[a["type"]])
     return JsonResponse(data={
         'data' : data,
@@ -788,7 +790,7 @@ def annual_pie_chart_data(request, year) :
         #data.append(round(a['total_moving_time']))
         perc = round((a['total_moving_time']/all_moving_time)*100)
         data.append(perc)
-        labels.append("Percent " + a["type"])
+        labels.append(a["type"])
         colors.append(colors_dict[a["type"]])
     return JsonResponse(data={
         'data' : data,

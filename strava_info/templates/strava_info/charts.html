@@ -85,7 +85,7 @@
             success: function (data) {
                 var mydatasets = [];
                 if (data.datasets.length == 1) {
-                    mydatasets.push({label: data.single_label, data:data.datasets[0]});
+                    mydatasets.push({label: data.single_label, data:data.datasets[0], backgroundColor: data.color});
                 } else {
                     for(var j = 0; j < data.datasets.length; j++) {
                         mydatasets.push({label: data.years[j], data: data.datasets[j]});
