@@ -77,10 +77,12 @@ def index(request) :
         else :
             if su.is_strava_verified and su.has_completed_initial_download :
                 all_acts = StravaActivity.objects.filter(site_user=user)
-                # Get the five most recent activities
+                # Get the five (or fewer) most recent activities
+                num2word = {0:"zero", 1:"one", 2:"two", 3:"three", 4:"four", 5:"five"}
                 most_recent = all_acts.order_by('-start_date')[0:5]
                 context = get_base_context(request)
                 context["most_recent"] = most_recent
+                context["num_recent"] = num2word[len(most_recent)]
     return render(request, 'strava_info/index.html', context)
 
 
@@ -327,7 +329,7 @@ def compute_metrics(acts_qs, dict) :
         longest_distance_activity = acts_qs.order_by('-distance_meters')[0]
         dict["greatest_dist_miles"] = '{:,}'.format(round(longest_distance_activity.distance_miles))
         dict["greatest_dist_km"] = '{:,}'.format(round(longest_distance_activity.distance_km))
-        dict["greatest_dist_date"] = (longest_distance_activity.activity_id, longest_distance_activity.start_date.date)
+        dict["greatest_dist_date"] = (longest_distance_activity.activity_id, longest_distance_activity.start_date_local.date)
     #    dict["greatest_dist_link"] = longest_distance_activity.activity_id
         tot_elev_gain = acts_qs.aggregate(Sum('total_elevation_gain_m')).get("total_elevation_gain_m__sum")
         dict["tot_elev_gain_m"] = '{:,}'.format(round(tot_elev_gain, 2))
@@ -350,14 +352,14 @@ def compute_metrics(acts_qs, dict) :
         dict["max_speed_mph"]  = '{:,}'.format(round(acts_qs.aggregate(Max('max_speed_mph')).get("max_speed_mph__max"),2))
         dict["max_speed_kph"]  = '{:,}'.format(round(acts_qs.aggregate(Max('max_speed_kph')).get("max_speed_kph__max"),2))
         fastest = acts_qs.order_by('-max_speed_mps')[0]
-        dict["max_speed_date"] = (fastest.activity_id, fastest.start_date.date)
+        dict["max_speed_date"] = (fastest.activity_id, fastest.start_date_local.date)
         dict["max_elev_gain_ft"] = '{:,}'.format(round(acts_qs.aggregate(Max('elev_gain_ft')).get('elev_gain_ft__max'),2))
         dict["max_elev_gain_m"] = '{:,}'.format(round(acts_qs.aggregate(Max('total_elevation_gain_m')).get('total_elevation_gain_m__max'),2))
         most_gain = acts_qs.order_by('-total_elevation_gain_m')[0]
-        dict["max_elev_gain_date"] = (most_gain.activity_id, most_gain.start_date.date)
+        dict["max_elev_gain_date"] = (most_gain.activity_id, most_gain.start_date_local.date)
         dict["max_hr"] = acts_qs.aggregate(Max("max_heartrate")).get('max_heartrate__max')
         max_hr = acts_qs.order_by('-max_heartrate')[0]
-        dict["max_hr_date"] = (max_hr.activity_id, max_hr.start_date.date)
+        dict["max_hr_date"] = (max_hr.activity_id, max_hr.start_date_local.date)
     else :
         dict["tot_dist_miles"] = str(0.0)
         dict["tot_dist_km"] = str(0.0)
@@ -500,9 +502,9 @@ def suggest_similar_activities(request, *, elev_gain=None, distance=None, dist_f
     if moving_time :
         acts_qs = acts_qs.filter(moving_time_min__gte=(moving_time - time_fudge*moving_time), moving_time_min__lte=(moving_time + time_fudge*moving_time))
     if start_date :
-        acts_qs = acts_qs.filter(start_date__date__gte=start_date)
+        acts_qs = acts_qs.filter(start_date_local__date__gte=start_date)
     if end_date :
-        acts_qs = acts_qs.filter(start_date__date__lte=end_date)
+        acts_qs = acts_qs.filter(start_date_local__date__lte=end_date)
         
     results_list = []
     if len(acts_qs) > 0 :
@@ -516,7 +518,7 @@ def suggest_similar_activities(request, *, elev_gain=None, distance=None, dist_f
             info["elev"] = a_elev
             info["elapsed"] = '{:,}'.format(int(a.elapsed_time_min))
             info["moving"] = '{:,}'.format(int(a.moving_time_min))
-            info["date"] = a.start_date
+            info["date"] = a.start_date_local
             results_list.append(info)
     return results_list
     
@@ -769,7 +771,7 @@ def annual_charts(request) :
     # We're going to want a pie chart for each year. That means we are going to create
     # a canvas in the html for each year. Get the list of years.
     acts_qs = StravaActivity.objects.filter(site_user=request.user)
-    year_list = sorted(acts_qs.values_list("start_date__year", flat=True).distinct())
+    year_list = sorted(acts_qs.values_list("start_date__year", flat=True).distinct(), reverse=True)
     context["year_list"] = year_list
     return render(request, 'strava_info/piecharts.html', context)
 
@@ -795,7 +797,7 @@ def annual_pie_chart_data(request, year) :
     return JsonResponse(data={
         'data' : data,
         'labels' : labels,
-        'title_text' : "Percentage of total moving time of each activity type you recorded on Strava in " + str(year),
+        'title_text' : str(year) + " moving time percentages",
         'colors' : colors
     })
     

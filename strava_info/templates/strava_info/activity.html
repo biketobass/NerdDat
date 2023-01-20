@@ -5,29 +5,15 @@
 <br>
 <div class="container">
     <div class="row">
-            <div class="col text-start">
-                {% comment %} <div class="dropdown">
-                    <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      Switch Activity
-                    </a>
-                  
-                    <ul class="dropdown-menu">
-                            {% for t in type_list %}
-                                    <li><a class="dropdown-item" href="{% url 'strava_info:analyze_activity_type' t %}">{{t}}</a></li>
-                            {% endfor %}
-                    </ul>
-                </div> {% endcomment %}
-            </div>
+            {% comment %} <div class="col text-start">
+                
+            </div> {% endcomment %}
             <div class="col text-center">
                 <h3>Annual {{act_type}} Stats</h3>                    
             </div>
-            <div class="col text-end">
-                {% comment %} {% if user.stravauser.preferred_units == "imperial" %}
-                    <a class="btn btn-primary" href="{% url 'strava_info:switch_units' %}" role="button">Switch to Metic Units</a>
-                {% else %}
-                    <a class="btn btn-primary" href="{% url 'strava_info:switch_units' %}" role="button">Switch to Imperial Units</a>
-                {% endif %}           {% endcomment %}
-            </div>
+            {% comment %} <div class="col text-end">
+                
+            </div> {% endcomment %}
     </div>
 </div>
 

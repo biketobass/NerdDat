@@ -9,10 +9,18 @@
                     <div class="container text-left">
                         <div class="row">
                             <div class="col">
-                                <p>Your most recent five activities were:</p>
-                                {% for act in most_recent %}
-                                    <p><a href="https://www.strava.com/activities/{{act.activity_id}}">{{act.name}} on {{act.start_date}}</a></p> 
-                                {% endfor %}
+                                {% if num_recent == 0 %}
+                                    <p>It looks like you haven't uploaded any activities to Strava yet.</p>
+                                {% else %}
+                                    {% if num_recent == 1 %}
+                                        <p>Your most recent (and only) activity was:</p>
+                                    {% else %}
+                                        <p>Your most recent {{num_recent}} activities were:</p>
+                                    {% endif %}
+                                    {% for act in most_recent %}
+                                        <p><a href="https://www.strava.com/activities/{{act.activity_id}}">{{act.name}} on {{act.start_date_local}}</a></p> 
+                                    {% endfor %}
+                                {% endif %}
                             </div>
                             <div class="col">
                                 <div class="container text-center">
