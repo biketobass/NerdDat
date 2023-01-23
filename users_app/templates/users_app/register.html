@@ -6,6 +6,17 @@
 {% endblock title %}
 
 {% block content %}
+
+<div class="container">
+    <br>
+    <h2>Regitration Not Live Yet</h2>
+    <p>Thank you for your interest. This site is still in testing. Registration is by inviation only.</p>
+    <p>Return the <a href="{% url 'index' %}">homepage</a>.</p>
+    
+</div>
+
+
+{% comment %} 
     <div class="container">
         <br>
         <h2>Register for Fitness Data Synthesis</h2>
@@ -24,5 +35,5 @@
             {{ register_form|crispy }}
             <button class="btn btn-primary mb-5" type="submit">Register</button>
         </form>
-    </div>
+    </div> {% endcomment %}
 {% endblock content %}
