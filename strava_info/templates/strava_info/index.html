@@ -122,21 +122,46 @@
         {% endif %}        
 
     {% else %}
-        <div class="row">
-            <div class="col-sm-3">
+        <div class="container text-left">
+            <div class="row">
+                <div class="col text-left">
+                    <h1>Welcome to Nerd-Dat</h1>
+                    <h2>Mark's Nerdy Fitness Data Site</h2>
+                </div>
             </div>
-            <div class="col-sm-6">
-                <div class="card border-dark mb-3" style="width: 18rem;">
-                    <img src="{% static 'images/logo_cropped.jpeg' %}" class="card-img-top" alt="Fitness App Logo">
-                    <div class="card-body">
-                        <h5 class="card-title">Login or Register</h5>
-                        <p class="card-text">Welcome. Please login to your account or register.</p>
-                        <a class="btn btn-success" href="{% url 'users_app:login' %}" role="button">Login</a>
-                        <a class="btn btn-primary" href="{% url 'users_app:register' %}" role="button">Register</a>
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="card border-dark mb-3" style="width: 18rem;">
+                        <img src="{% static 'images/logo_cropped.jpeg' %}" class="card-img-top" alt="Fitness App Logo">
+                        <div class="card-body">
+                            <h5 class="card-title">Login or Register</h5>
+                            <p class="card-text">Welcome. Please login to your account or register.</p>
+                            <a class="btn btn-success" href="{% url 'users_app:login' %}" role="button">Login</a>
+                            <a class="btn btn-primary" href="{% url 'users_app:register' %}" role="button">Register</a>
+                        </div>
                     </div>
                 </div>
-            <div class="col-sm-3">
+                <div class="col-sm-9">
+                    <p>Login or Register so that you too can obsess over your Strava data. Here's how it works:</p>
+                    <ul>
+                        <li>Create an account by registering (currently by invitation only during testing).
+                        <li>Follow the instructions to authorize Strava to allow Nerd-Dat to access your Strava data.
+                        <li>Begin the initial download of your data. You'll only need to do this once. Afterwards any new activities
+                            you post to Strava will be automatically downloaded by Nerd-Dat until you revoke access.
+                    </ul>
+                    <p>Once you've completed the above, you'll be able to view various tables and charts that analyze your Strava activities.
+                        You'll also be able to use Nerd-Dat's search function to find links to your Strava activities that match
+                        the criteria you are looking for such as all of your approximately 100 mile bike rides or 10KM runs.
+                    </p>
+                        A note about your data: In order to analyze your data, Nerd-Dat downloads your Strava data and stores it in a database on its servers.
+                        I don't want access to your data; if I could have programmed Nerd-Dat to analyze your data efficiently without storing a copy, I would have done that.
+                        Since I couldn't, I make it easy for you to delete your data from Nerd-Dat. The first step is for you to go to Strava and deauthorize Nerd-Dat.
+                        That will stop Strava from sending any new data to Nerd-Dat. Then back at Nerd-Dat, click the delete your data link on the settings page.
+                        That will delete all of your data stored by Nerd-Dat (but not at Strava). If you really want to disappear from Nerd-Dat,
+                        click the link to delete your account. Deleting your account will also delete your data.
+                    </p>
+
+                </div>
             </div>
-        </div>
     {% endif %}
 {% endblock %}
