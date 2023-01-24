@@ -227,16 +227,18 @@ def update_strava_data(request) :
 
 @login_required
 def delete_strava_data(request) :
-    # Need to add some safeguards here so that no one deletes all by mistake.
-    user = request.user
-    # Get all of this user's StavaActivities.
-    all_acts = StravaActivity.objects.filter(site_user=request.user)
-    all_acts.all().delete()
-    su = user.stravauser
-    su.has_completed_initial_download = False
-    su.save()
-    messages.success(request, "Sucessfully deleted!")
-    return redirect('index')
+    if request.method == "POST" :
+        user = request.user
+        # Get all of this user's StavaActivities.
+        all_acts = StravaActivity.objects.filter(site_user=request.user)
+        all_acts.all().delete()
+        su = user.stravauser
+        su.has_completed_initial_download = False
+        su.save()
+        messages.success(request, "Sucessfully deleted!")
+        return redirect('index')
+    context = get_base_context(request)
+    return render(request, "strava_info/delete_strava_data.html", context)
 
 @login_required
 def analyze_activity_type(request, act_type) :
