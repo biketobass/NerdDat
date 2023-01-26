@@ -73,7 +73,7 @@ def index(request) :
         try :
             su = user.stravauser
         except StravaUser.DoesNotExist as e :
-            print("Darn")
+            pass
         else :
             if su.is_strava_verified and su.has_completed_initial_download :
                 all_acts = StravaActivity.objects.filter(site_user=user)
