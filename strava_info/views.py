@@ -89,10 +89,13 @@ def index(request) :
 def get_strava_activity_type_list(user) :
     type_list = []
     if user.is_authenticated :
-        su = user.stravauser
-        if su.is_strava_verified and su.has_completed_initial_download :
-            all_acts = StravaActivity.objects.filter(site_user=user)
-            type_list = all_acts.values_list('type', flat=True).distinct()
+        try :
+            su = user.stravauser
+            if su.is_strava_verified and su.has_completed_initial_download :
+                all_acts = StravaActivity.objects.filter(site_user=user)
+                type_list = all_acts.values_list('type', flat=True).distinct()
+        except StravaUser.DoesNotExist as e :
+            pass
     return type_list
             
 # @login_required
@@ -877,3 +880,5 @@ def get_base_context(request) :
     context["metric"] = "distance"
     #context["time_span"] = "monthly"
     return context
+
+

@@ -7,4 +7,4 @@ class CustomRegisterForm(UserCreationForm) :
     
     class Meta :
         model = User # This sets up the User database
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'first_name', 'email', 'password1', 'password2']

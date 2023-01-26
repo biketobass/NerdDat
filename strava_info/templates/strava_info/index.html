@@ -3,7 +3,7 @@
 
 {% block content %}
     {% if user.is_authenticated %}
-        <h1>Welcome back, {{ user.username}}</h1>
+        <h1>Welcome back, {{ user.first_name}}</h1>
         {% if user.stravauser.is_strava_verified %}
                 {% if user.stravauser.has_completed_initial_download %}
                     <div class="container text-left">
@@ -149,16 +149,18 @@
                         <li>Begin the initial download of your data. You'll only need to do this once. Afterwards any new activities
                             you post to Strava will be automatically downloaded by Nerd-Dat until you revoke access.
                     </ul>
-                    <p>Once you've completed the above, you'll be able to view various tables and charts that analyze your Strava activities.
-                        You'll also be able to use Nerd-Dat's search function to find links to your Strava activities that match
-                        the criteria you are looking for such as all of your approximately 100 mile bike rides or 10KM runs.
+                    <p>Nerd-Dat produces tables and charts that analyze your Strava activities.
+                        It also provides a search function for your activities. I use this for route planning.
+                        For instance, if I want to take a 50 mile ride with 3,000 feet of elevation gain, I'll have
+                        Nerd-Dat provide a list links to my Strava activities that meet those criteria. Then, I can review those activities and
+                        decide if I want to ride one again or use Strava's route planning feature to find a new route.
                     </p>
-                        A note about your data: In order to analyze your data, Nerd-Dat downloads your Strava data and stores it in a database on its servers.
-                        I don't want access to your data; if I could have programmed Nerd-Dat to analyze your data efficiently without storing a copy, I would have done that.
-                        Since I couldn't, I make it easy for you to delete your data from Nerd-Dat. The first step is for you to go to Strava and deauthorize Nerd-Dat.
-                        That will stop Strava from sending any new data to Nerd-Dat. Then back at Nerd-Dat, click the delete your data link on the settings page.
-                        That will delete all of your data stored by Nerd-Dat (but not at Strava). If you really want to disappear from Nerd-Dat,
-                        click the link to delete your account. Deleting your account will also delete your data.
+                        A note about your data: In order to analyze your data efficiently, Nerd-Dat downloads your Strava data and stores it
+                        in a database on its servers. If you decide to stop using Ner-Dat, you can easily delete your data.
+                        The first step is to go to Strava and deauthorize Nerd-Dat.
+                        That will stop Strava from sending any new data to Nerd-Dat. Then back at Nerd-Dat, click the delete your data link on
+                        the settings page. That will delete all of your data stored by Nerd-Dat (but not at Strava). If you really want to
+                        disappear from Nerd-Dat, click the link to delete your account. Deleting your account will also delete your data.
                     </p>
 
                 </div>
