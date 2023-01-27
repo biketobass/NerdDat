@@ -7,7 +7,7 @@
 
 {% block content %}
 
-{% comment %} <div class="container">
+<div class="container">
     <div class="row">
         <div class="col">
             <br>
@@ -17,10 +17,10 @@
         </div>
     </div>
     
-</div> {% endcomment %}
+</div>
 
 
-    <div class="container">
+    {% comment %} <div class="container">
         <br>
         <h2>Register for Fitness Data Synthesis</h2>
         {% if messages %}
@@ -38,5 +38,5 @@
             {{ register_form|crispy }}
             <button class="btn btn-primary mb-5" type="submit">Register</button>
         </form>
-    </div>
+    </div> {% endcomment %}
 {% endblock content %}
