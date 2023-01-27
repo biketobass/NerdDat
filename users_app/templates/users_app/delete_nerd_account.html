@@ -8,7 +8,7 @@
         <div class="col">
             <form method="post" action="">
                 {% csrf_token %}
-                <h1>Are you certain you want to delete your Nerd-Dat account?</h1>
+                <h1>Are you certain you want to delete your NerdDat account?</h1>
                 <button type="submit" class="btn btn-danger">Yes</button>
                 <a class="btn btn-primary" href="{% url 'strava_info:strava_settings' %}" role="button">Cancel</a>
 
