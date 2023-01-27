@@ -20,16 +20,6 @@ env = environ.Env(SECRET_KEY = str,)
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-lzk8af^r#g#xe2ss$f06)1tcc#&i=($5i=y0xf=xj+bv+4639&'
-
-# # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-
-# ALLOWED_HOSTS = []
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 DEBUG = env('DJANGO_DEBUG')
 ALLOWED_HOSTS = [env('DJANGO_ALLOWED_HOSTS')]
