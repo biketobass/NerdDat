@@ -147,3 +147,5 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # The URL to use when referring to static files (where they will be served from)
 STATIC_URL = '/static/'
+
+CSRF_TRUSTED_ORIGINS = ['https://web-production-cae3b.up.railway.app/']
