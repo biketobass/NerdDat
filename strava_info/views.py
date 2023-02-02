@@ -171,6 +171,7 @@ def download_strava_data(request, start_from=None) :
         results = results + r
         # increment page.
         page += 1
+        break
 
     # Now that you have it all, save it.
     save_strava_data(results, request.user)
