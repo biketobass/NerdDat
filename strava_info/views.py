@@ -166,13 +166,11 @@ def download_strava_data(request, start_from=None) :
             raise(e)
         r = r.json()
         # If no results, then exit loop
-        if (not r):
+        if (not r or len(r) == 0):
             break
         results = results + r
         # increment page.
         page += 1
-        if page == 4 :
-            break
 
     # Now that you have it all, save it.
     save_strava_data(results, request.user)
