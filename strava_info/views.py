@@ -165,10 +165,10 @@ def download_strava_data(request, start_from=None) :
             messages.error(request, "Encountered an exception downloading data.")
             raise(e)
         r = r.json()
-        results = results + r
         # If no results, then exit loop
         if (not r):
             break
+        results = results + r
         # increment page.
         page += 1
 
