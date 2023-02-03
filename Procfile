@@ -1,1 +1,1 @@
-web: python manage.py migrate && gunicorn --timeout 120 fitnessapp.wsgi
+web: python manage.py migrate && gunicorn fitnessapp.wsgi

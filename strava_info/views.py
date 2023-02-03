@@ -129,7 +129,7 @@ def get_strava_data(request) :
         redirect('index')
     return redirect('index')
 
-
+@login_required
 def download_strava_data(request, start_from=None) :
     su = request.user.stravauser
     
