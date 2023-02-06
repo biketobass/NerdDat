@@ -12,6 +12,7 @@ from dateutil import parser
 import pytz
 import distinctipy
 import django.template.loader as loader
+import threading
 
 # Helper method for saving strava data after downloading
 
@@ -98,34 +99,15 @@ def get_strava_activity_type_list(user) :
             pass
     return type_list
             
-# @login_required
-# def strava_index(request) :
-#     user = request.user
-#     su = user.stravauser
-#     context = {}
-#     if su.has_completed_initial_download :
-#         all_acts = StravaActivity.objects.filter(site_user=user)
-#         # Get a list of all the activity types the user has ever done.
-#         # For each type get the number of activities of that type.
-#         act_type_counts = {}
-#         for a in all_acts :
-#             if a.type not in act_type_counts :
-#                 count = len(all_acts.filter(type=a.type))
-#                 act_type_counts[a.type] = count
-#         context["type_counts"] = act_type_counts
-#         # Get the most recent activity
-#         #most_recent = all_acts.aggregate(Max('start_date')).get('start_date__max')
-#         most_recent = all_acts.order_by('-start_date')[0:5]
-#         context["most_recent"] = most_recent
-#         context["type_list"] = get_strava_activity_type_list(user)
-#         context["metric"] = "distance"
-#     return render(request, 'strava_info/strava_index.html', context)
 
 @login_required
 def get_strava_data(request) :
     try :
+        t = threading.Thread(target=download_strava_data, args=[request])
+        t.setDaemon(True)
+        t.start()
         #download_strava_data(request)
-        return StreamingHttpResponse(download_strava_data_iter(request))
+        #return StreamingHttpResponse(download_strava_data_iter(request))
     except requests.exceptions.RequestException as e :
         redirect('index')
     return redirect('index')
@@ -224,8 +206,11 @@ def update_strava_data(request) :
     most_recent = most_recent_list[0]
     most_recent_date = most_recent.start_date
     try :
+        t = threading.Thread(target=download_strava_data, args=[request, most_recent_date])
+        t.setDaemon(True)
+        t.start()
         #download_strava_data(request, most_recent_date)
-        return StreamingHttpResponse(download_strava_data_iter(request, most_recent_date))
+        #return StreamingHttpResponse(download_strava_data_iter(request, most_recent_date))
     except requests.exceptions.RequestException as e :
         return redirect('index')
     return redirect('index')
