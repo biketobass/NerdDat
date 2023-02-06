@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Sum, Max, Min, Avg
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse, HttpResponse
 import requests
 from .models import StravaUser, StravaActivity
 from .forms import ImperialStravaSearchForm, MetricStravaSearchForm
@@ -10,8 +10,8 @@ from django.conf import settings
 import time
 from dateutil import parser
 import pytz
-import math
 import distinctipy
+import django.template.loader as loader
 
 # Helper method for saving strava data after downloading
 
@@ -124,12 +124,12 @@ def get_strava_activity_type_list(user) :
 @login_required
 def get_strava_data(request) :
     try :
-        download_strava_data(request)
+        #download_strava_data(request)
+        return StreamingHttpResponse(download_strava_data_iter(request))
     except requests.exceptions.RequestException as e :
         redirect('index')
     return redirect('index')
 
-@login_required
 def download_strava_data(request, start_from=None) :
     su = request.user.stravauser
     
@@ -217,10 +217,15 @@ def check_and_refresh_access_token(stravauser) :
 def update_strava_data(request) :
     user = request.user
     #su = user.stravauser
-    most_recent = StravaActivity.objects.filter(site_user=request.user).order_by('-start_date')[0]
+    most_recent_list = StravaActivity.objects.filter(site_user=request.user).order_by('-start_date')
+    if not most_recent_list :
+        messages.error(request, "You haven't downloaded any activities yet.")
+        return redirect('index')
+    most_recent = most_recent_list[0]
     most_recent_date = most_recent.start_date
     try :
-        download_strava_data(request, most_recent_date)
+        #download_strava_data(request, most_recent_date)
+        return StreamingHttpResponse(download_strava_data_iter(request, most_recent_date))
     except requests.exceptions.RequestException as e :
         return redirect('index')
     return redirect('index')
@@ -881,4 +886,68 @@ def get_base_context(request) :
     #context["time_span"] = "monthly"
     return context
 
+
+def download_strava_data_iter(request, start_from=None) :
+    t = loader.get_template('strava_info/test_iter.html')
+    context = get_base_context(request)
+    context["user"] = request.user
+    t = loader.get_template('strava_info/test_iter.html')
+    yield t.render(context)
+    
+    su = request.user.stravauser
+    
+    # Here need to get the user's access and refresh tokens from the DB.
+    # If access_token has expired, use the refresh_token to get the new access_token
+    try :
+        check_and_refresh_access_token(su)
+    except requests.exceptions.RequestException as e :
+        messages.error(request, "Encountered an exception trying to refresh tokens.")
+        raise(e)
+    
+    page = 1
+    url = "https://www.strava.com/api/v3/activities"
+    if not start_from :
+        # Parse the start date by parsing it into a Datetime object.
+        # Set the timezone to UTC
+        start_date = "January 1, 1970"
+        startDT = parser.parse(start_date)
+        timezone = pytz.timezone("UTC")
+        startDT = timezone.localize(startDT)
+    else :
+        startDT = start_from
+    start_stamp = str(int(startDT.timestamp()))
+    results = []
+    while True:        
+        # get page of activities from Strava
+        # We're going to get 200 at a time.
+        #payload = {'access_token': su.access_token, 'after': start_stamp, 'before': end_stamp, 'per_page' : '200', 'page': str(page)}
+        payload = {'access_token': su.access_token, 'after': start_stamp, 'per_page' : '200', 'page': str(page)}
+        try:
+            r = requests.get(url, params = payload)
+        except requests.exceptions.RequestException as e:
+            messages.error(request, "Encountered an exception downloading data.")
+            raise(e)
+        r = r.json()
+        # If no results, then exit loop
+        if (not r):
+            break
+        results = results + r
+        # increment page.
+        page += 1
+        yield "Working..."
+
+    # Now that you have it all, save it.
+    save_strava_data(results, request.user)
+    su.has_completed_initial_download = True
+    su.save()
+    # Here we need to update the user's pie chart color dictionary.
+    su.pie_color_palette = compute_pie_colors(request.user)
+    su.save()
+
+    if not start_from :
+        messages.success(request, "Sucessfully downloaded!")
+    else :
+        messages.success(request, "Sucessfully updated! Found " + str(len(results)) + " new activities.")
+
+    yield "Click the home button<br>"
 
