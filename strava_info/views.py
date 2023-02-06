@@ -125,7 +125,7 @@ def get_strava_activity_type_list(user) :
 def get_strava_data(request) :
     try :
         #download_strava_data(request)
-        return StreamingHttpResponse(download_strava_data_iter(request))
+        return HttpResponse(download_strava_data_iter(request))
     except requests.exceptions.RequestException as e :
         redirect('index')
     return redirect('index')
@@ -225,7 +225,7 @@ def update_strava_data(request) :
     most_recent_date = most_recent.start_date
     try :
         #download_strava_data(request, most_recent_date)
-        return StreamingHttpResponse(download_strava_data_iter(request, most_recent_date))
+        return HttpResponse(download_strava_data_iter(request, most_recent_date))
     except requests.exceptions.RequestException as e :
         return redirect('index')
     return redirect('index')
