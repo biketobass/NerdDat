@@ -125,7 +125,7 @@ def get_strava_activity_type_list(user) :
 def get_strava_data(request) :
     try :
         #download_strava_data(request)
-        return HttpResponse(download_strava_data_iter(request))
+        return StreamingHttpResponse(download_strava_data_iter(request))
     except requests.exceptions.RequestException as e :
         redirect('index')
     return redirect('index')
