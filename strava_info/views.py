@@ -225,7 +225,7 @@ def update_strava_data(request) :
     most_recent_date = most_recent.start_date
     try :
         #download_strava_data(request, most_recent_date)
-        return HttpResponse(download_strava_data_iter(request, most_recent_date))
+        return StreamingHttpResponse(download_strava_data_iter(request, most_recent_date))
     except requests.exceptions.RequestException as e :
         return redirect('index')
     return redirect('index')
@@ -888,10 +888,9 @@ def get_base_context(request) :
 
 
 def download_strava_data_iter(request, start_from=None) :
-    t = loader.get_template('strava_info/test_iter.html')
+    t = loader.get_template('strava_info/downloading_strava_data.html')
     context = get_base_context(request)
     context["user"] = request.user
-    t = loader.get_template('strava_info/test_iter.html')
     yield t.render(context)
     
     su = request.user.stravauser
