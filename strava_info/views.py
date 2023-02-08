@@ -13,6 +13,7 @@ import pytz
 import distinctipy
 import django.template.loader as loader
 import threading
+from social_django.models import UserSocialAuth
 
 # Helper method for saving strava data after downloading
 
@@ -71,6 +72,15 @@ def index(request) :
     user = request.user
     context = {}
     if user.is_authenticated :
+        try :
+            soc = user.usersocialauth
+        except UserSocialAuth.DoesNotExist as e :
+            pass
+        else :
+            if soc.provider == 'strava' :
+                # Create a StravaUser and set the verified flag to true
+                user.stravauser = StravaUser()
+                user.stravauser.is_strava_verified = True
         try :
             su = user.stravauser
         except StravaUser.DoesNotExist as e :
