@@ -138,6 +138,11 @@ LOGIN_URL = 'users_app:login'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # STRAVA_CLIENT_SECRET = env('STRAVA_CLIENT_SECRET')
 # STRAVA_CLIENT_ID = env('STRAVA_CLIENT_ID')
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.strava.StravaOAuth',
+    'django.contrib.auth.backends.ModelBackend',
+)
 SOCIAL_AUTH_STRAVA_SECRET = env('STRAVA_CLIENT_SECRET')
 SOCIAL_AUTH_STRAVA_KEY = env('STRAVA_CLIENT_ID')
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'index'
