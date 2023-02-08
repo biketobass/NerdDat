@@ -77,7 +77,8 @@ def index(request) :
         except UserSocialAuth.DoesNotExist as e :
             pass
         else :
-            if soc.provider == 'strava' :
+            strava_login = user.social_auth.get(provider='strava')
+            if strava_login :
                 # Create a StravaUser and set the verified flag to true
                 user.stravauser = StravaUser()
                 user.stravauser.is_strava_verified = True
