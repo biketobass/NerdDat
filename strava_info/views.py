@@ -177,8 +177,8 @@ def check_and_refresh_access_token(stravauser) :
             response = requests.post(
                 url = 'https://www.strava.com/oauth/token',
                 data = {
-                    'client_id': settings.STRAVA_CLIENT_ID,
-                    'client_secret': settings.STRAVA_CLIENT_SECRET,
+                    'client_id': settings.SOCIAL_AUTH_STRAVA_KEY,
+                    'client_secret': settings.SOCIAL_AUTH_STRAVA_SECRET,
                     'grant_type': 'refresh_token',
                     'refresh_token': stravauser.refresh_token
                 }
