@@ -73,7 +73,7 @@ def index(request) :
     context = {}
     if user.is_authenticated :
         try :
-            soc = user.usersocialauth
+            soc = user.social_auth
         except UserSocialAuth.DoesNotExist as e :
             pass
         else :
