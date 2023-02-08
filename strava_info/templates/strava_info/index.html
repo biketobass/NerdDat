@@ -120,8 +120,6 @@
         {% else %}
             <p>Dude, you need to OAuth</p>
             <a class="btn btn-primary" href="{% url 'social:begin' 'strava' %}" role="button">Connect to Strava</a>
-            {% comment %} <a href="{% url 'social:begin' 'strava' %}" class="btn btn-primary" role="button" {% endcomment %}
-            aria-disabled="true">Connect to Strava</a>
         {% endif %}        
 
     {% else %}
