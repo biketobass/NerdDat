@@ -77,11 +77,15 @@ def index(request) :
         except UserSocialAuth.DoesNotExist as e :
             pass
         else :
-            strava_login = user.social_auth.get(provider='strava')
+            strava_login = soc.get(provider='strava')
             if strava_login :
                 # Create a StravaUser and set the verified flag to true
                 user.stravauser = StravaUser()
                 user.stravauser.is_strava_verified = True
+                user.stravauser.save()
+                # Also add the expires_at field to extra data.
+                strava_login.extra_data["expires_at"] = strava_login.extra_data["auth_time"] + strava_login.extra_data["expires"]
+                strava_login.save()
         try :
             su = user.stravauser
         except StravaUser.DoesNotExist as e :
@@ -124,12 +128,14 @@ def get_strava_data(request) :
     return redirect('index')
 
 def download_strava_data(request, start_from=None) :
-    su = request.user.stravauser
+    su = request.user.strava_user
+    soc = request.user.social_auth
+    strava_soc = soc.get(provider='strava')
     
     # Here need to get the user's access and refresh tokens from the DB.
     # If access_token has expired, use the refresh_token to get the new access_token
     try :
-        check_and_refresh_access_token(su)
+        check_and_refresh_access_token(strava_soc)
     except requests.exceptions.RequestException as e :
         messages.error(request, "Encountered an exception trying to refresh tokens.")
         raise(e)
@@ -151,7 +157,7 @@ def download_strava_data(request, start_from=None) :
         # get page of activities from Strava
         # We're going to get 200 at a time.
         #payload = {'access_token': su.access_token, 'after': start_stamp, 'before': end_stamp, 'per_page' : '200', 'page': str(page)}
-        payload = {'access_token': su.access_token, 'after': start_stamp, 'per_page' : '200', 'page': str(page)}
+        payload = {'access_token': strava_soc.extra_data["access_token"], 'after': start_stamp, 'per_page' : '200', 'page': str(page)}
         try:
             r = requests.get(url, params = payload)
         except requests.exceptions.RequestException as e:
@@ -180,8 +186,8 @@ def download_strava_data(request, start_from=None) :
     
 
 
-def check_and_refresh_access_token(stravauser) :
-    if stravauser.expires_at < time.time():
+def check_and_refresh_access_token(strava_soc) :
+    if strava_soc.extra_data["auth_time"] + strava_soc.extra_data["expires"] < time.time():
         # Make Strava auth API call with current refresh token
         # Make the request and get the response..
         try :
@@ -191,19 +197,26 @@ def check_and_refresh_access_token(stravauser) :
                     'client_id': settings.SOCIAL_AUTH_STRAVA_KEY,
                     'client_secret': settings.SOCIAL_AUTH_STRAVA_SECRET,
                     'grant_type': 'refresh_token',
-                    'refresh_token': stravauser.refresh_token
+                    'refresh_token': strava_soc.extra_data["refresh_token"]
                 }
             )
         except requests.exceptions.RequestException as e:
             raise(e)
         # Replace the old strava_tokens with the response.
         tokens = response.json()
-        stravauser.token_type = tokens["token_type"]
-        stravauser.access_token = tokens['access_token']
-        stravauser.expires_at = tokens['expires_at']
-        stravauser.expires_in = tokens['expires_in']
-        stravauser.refresh_token = tokens['refresh_token']
-        stravauser.save()
+        strava_soc.extra_data["token_type"] = tokens["token_type"]
+        strava_soc.extra_data["access_token"] = tokens['access_token']
+        strava_soc.extra_data["auth_time"] = time.time()
+        strava_soc.extra_data["expires_at"] = tokens['expires_at']
+        strava_soc.extra_data["expires"] = tokens['expires_in']
+        strava_soc.extra_data["refresh_token"] = tokens['refresh_token']
+        strava_soc.save()
+        # stravauser.token_type = tokens["token_type"]
+        # stravauser.access_token = tokens['access_token']
+        # stravauser.expires_at = tokens['expires_at']
+        # stravauser.expires_in = tokens['expires_in']
+        # stravauser.refresh_token = tokens['refresh_token']
+        # stravauser.save()
 
 
 @login_required
