@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'users_app',
     'crispy_forms',
     'crispy_bootstrap5',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +64,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -133,8 +136,12 @@ LOGIN_URL = 'users_app:login'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-STRAVA_CLIENT_SECRET = env('STRAVA_CLIENT_SECRET')
-STRAVA_CLIENT_ID = env('STRAVA_CLIENT_ID')
+# STRAVA_CLIENT_SECRET = env('STRAVA_CLIENT_SECRET')
+# STRAVA_CLIENT_ID = env('STRAVA_CLIENT_ID')
+SOCIAL_AUTH_STRAVA_SECRET = env('STRAVA_CLIENT_SECRET')
+SOCIAL_AUTH_STRAVA_KEY = env('STRAVA_CLIENT_ID')
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'index'
+SOCIAL_AUTH_STRAVA_SCOPE = ['activity:read_all']
 
 # Update database configuration from $DATABASE_URL.
 import dj_database_url

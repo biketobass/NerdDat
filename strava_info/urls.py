@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'strava_info'
@@ -20,4 +20,5 @@ urlpatterns = [
     path('charts_data/<str:act_type>/<str:metric>/<str:time_span>', views.charts_data, name='charts_data'),
     path('pie_chart_data', views.pie_chart_data, name='pie_chart_data'),
     path('strava_settings', views.strava_settings, name='strava_settings'),
+    path('oauth/', include('social_django.urls', namespace='social')),
 ]
