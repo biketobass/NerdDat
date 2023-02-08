@@ -22,4 +22,5 @@ urlpatterns = [
     path('', strava_views.index, name='index'),
     path('strava_info/', include('strava_info.urls')),
     path('account/', include('users_app.urls')),
+    path('oauth/', include('social_django.urls', namespace='social')),
 ]
