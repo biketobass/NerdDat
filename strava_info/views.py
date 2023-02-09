@@ -140,8 +140,8 @@ def get_strava_data(request) :
     return redirect('index')
 
 def download_strava_data(request, start_from=None) :
-    su = request.user.strava_user
-    soc = request.user.social_auth
+    su = request.user.stravauser
+    #soc = request.user.social_auth
     #strava_soc = soc.get(provider='strava')
     
     # Here need to get the user's access and refresh tokens from the DB.
