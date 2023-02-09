@@ -98,7 +98,7 @@ def index(request) :
                     user.stravauser.token_type = strava_login.extra_data["token_type"]
                     user.stravauser.access_token = strava_login.extra_data['access_token']
                     user.stravauser.expires_at = strava_login.extra_data['expires_at']
-                    user.stravauser.expires_in = strava_login.extra_data['expires_in']
+                    user.stravauser.expires_in = strava_login.extra_data['expires']
                     user.stravauser.refresh_token = strava_login.extra_data['refresh_token']
                     user.stravauser.save()
                 finally :
