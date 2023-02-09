@@ -71,34 +71,46 @@ def save_strava_data(results, the_user) :
 def index(request) :
     user = request.user
     context = {}
+    # See if the user has logged in.
     if user.is_authenticated :
+        # It has so no see if it has done the Strava OAuth.
         try :
             soc = user.social_auth
         except UserSocialAuth.DoesNotExist as e :
+            # The user hasn't been through the OAuth process. Don't do anything
+            # then.
             pass
         else :
+            # The user has been through the Strava OAuth process.
             strava_login = soc.get(provider='strava')
             if strava_login :
-                # Create a StravaUser and set the verified flag to true
-                user.stravauser = StravaUser()
-                user.stravauser.is_strava_verified = True
-                user.stravauser.save()
-                # Also add the expires_at field to extra data.
+                # Add the expires_at field to extra data.
                 strava_login.extra_data["expires_at"] = strava_login.extra_data["auth_time"] + strava_login.extra_data["expires"]
                 strava_login.save()
-        try :
-            su = user.stravauser
-        except StravaUser.DoesNotExist as e :
-            pass
-        else :
-            if su.is_strava_verified and su.has_completed_initial_download :
-                all_acts = StravaActivity.objects.filter(site_user=user)
-                # Get the five (or fewer) most recent activities
-                num2word = {0:"zero", 1:"one", 2:"two", 3:"three", 4:"four", 5:"five"}
-                most_recent = all_acts.order_by('-start_date')[0:5]
-                context = get_base_context(request)
-                context["most_recent"] = most_recent
-                context["num_recent"] = num2word[len(most_recent)]
+                # Now see if we have have created a stravauser yet for the user.
+                try :
+                    su = user.stravauser
+                except StravaUser.DoesNotExist as e :
+                    # We haven't created one yet, so do so and
+                    # set the verified flag to tru.
+                    user.stravauser = StravaUser()
+                    user.stravauser.is_strava_verified = True
+                    user.stravauser.token_type = strava_login.extra_data["token_type"]
+                    user.stravauser.access_token = strava_login.extra_data['access_token']
+                    user.stravauser.expires_at = strava_login.extra_data['expires_at']
+                    user.stravauser.expires_in = strava_login.extra_data['expires_in']
+                    user.stravauser.refresh_token = strava_login.extra_data['refresh_token']
+                    user.stravauser.save()
+                finally :
+                    su = user.stravauser
+                    if su.is_strava_verified and su.has_completed_initial_download :
+                        all_acts = StravaActivity.objects.filter(site_user=user)
+                        # Get the five (or fewer) most recent activities
+                        num2word = {0:"zero", 1:"one", 2:"two", 3:"three", 4:"four", 5:"five"}
+                        most_recent = all_acts.order_by('-start_date')[0:5]
+                        context = get_base_context(request)
+                        context["most_recent"] = most_recent
+                        context["num_recent"] = num2word[len(most_recent)]
     return render(request, 'strava_info/index.html', context)
 
 
@@ -130,12 +142,12 @@ def get_strava_data(request) :
 def download_strava_data(request, start_from=None) :
     su = request.user.strava_user
     soc = request.user.social_auth
-    strava_soc = soc.get(provider='strava')
+    #strava_soc = soc.get(provider='strava')
     
     # Here need to get the user's access and refresh tokens from the DB.
     # If access_token has expired, use the refresh_token to get the new access_token
     try :
-        check_and_refresh_access_token(strava_soc)
+        check_and_refresh_access_token(request.user)
     except requests.exceptions.RequestException as e :
         messages.error(request, "Encountered an exception trying to refresh tokens.")
         raise(e)
@@ -157,7 +169,7 @@ def download_strava_data(request, start_from=None) :
         # get page of activities from Strava
         # We're going to get 200 at a time.
         #payload = {'access_token': su.access_token, 'after': start_stamp, 'before': end_stamp, 'per_page' : '200', 'page': str(page)}
-        payload = {'access_token': strava_soc.extra_data["access_token"], 'after': start_stamp, 'per_page' : '200', 'page': str(page)}
+        payload = {'access_token': su.access_token, 'after': start_stamp, 'per_page' : '200', 'page': str(page)}
         try:
             r = requests.get(url, params = payload)
         except requests.exceptions.RequestException as e:
@@ -186,8 +198,10 @@ def download_strava_data(request, start_from=None) :
     
 
 
-def check_and_refresh_access_token(strava_soc) :
-    if strava_soc.extra_data["auth_time"] + strava_soc.extra_data["expires"] < time.time():
+def check_and_refresh_access_token(user) :
+    strava_soc = user.social_auth.get(provider='strava')
+    stravauser = user.stravauser
+    if stravauser.expires_at < time.time():
         # Make Strava auth API call with current refresh token
         # Make the request and get the response..
         try :
@@ -197,7 +211,7 @@ def check_and_refresh_access_token(strava_soc) :
                     'client_id': settings.SOCIAL_AUTH_STRAVA_KEY,
                     'client_secret': settings.SOCIAL_AUTH_STRAVA_SECRET,
                     'grant_type': 'refresh_token',
-                    'refresh_token': strava_soc.extra_data["refresh_token"]
+                    'refresh_token': stravauser.refresh_token
                 }
             )
         except requests.exceptions.RequestException as e:
@@ -211,17 +225,17 @@ def check_and_refresh_access_token(strava_soc) :
         strava_soc.extra_data["expires"] = tokens['expires_in']
         strava_soc.extra_data["refresh_token"] = tokens['refresh_token']
         strava_soc.save()
-        # stravauser.token_type = tokens["token_type"]
-        # stravauser.access_token = tokens['access_token']
-        # stravauser.expires_at = tokens['expires_at']
-        # stravauser.expires_in = tokens['expires_in']
-        # stravauser.refresh_token = tokens['refresh_token']
-        # stravauser.save()
+        stravauser.token_type = tokens["token_type"]
+        stravauser.access_token = tokens['access_token']
+        stravauser.expires_at = tokens['expires_at']
+        stravauser.expires_in = tokens['expires_in']
+        stravauser.refresh_token = tokens['refresh_token']
+        stravauser.save()
 
 
 @login_required
 def update_strava_data(request) :
-    user = request.user
+    #user = request.user
     #su = user.stravauser
     most_recent_list = StravaActivity.objects.filter(site_user=request.user).order_by('-start_date')
     if not most_recent_list :
