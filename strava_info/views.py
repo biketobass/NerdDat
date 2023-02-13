@@ -1041,7 +1041,8 @@ def unsubscribe_strava_webhooks(request) :
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def handle_strava_webhook(request) :
-    return HttpResponse("I'm here.")
+    print("Here's the request ", request.GET)
+    return HttpResponse(request.GET)
     # if request.method == "GET" :
     #     # We're dealing with a response to our request for a
     #     # subscription. These are the only GET requests
