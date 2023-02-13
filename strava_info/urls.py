@@ -1,5 +1,6 @@
 from django.urls import path, include
 from . import views
+from django.conf import settings
 
 app_name = 'strava_info'
 urlpatterns = [
@@ -20,4 +21,7 @@ urlpatterns = [
     path('charts_data/<str:act_type>/<str:metric>/<str:time_span>', views.charts_data, name='charts_data'),
     path('pie_chart_data', views.pie_chart_data, name='pie_chart_data'),
     path('strava_settings', views.strava_settings, name='strava_settings'),
+    path('subscribe_to_strava_webhooks', views.subscribe_to_strava_webhooks, name='subscribe_to_strava_webhooks'),
+    path('unsubscribe_strava_webhooks', views.unsubscribe_strava_webhooks, name='unsubscribe_strava_webhooks'),
+    path('webhooks/'+settings.STRAVA_CB_LONG_PART, views.handle_strava_webhook, name='handle_strava_webhook'),
 ]

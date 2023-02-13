@@ -60,4 +60,9 @@ class StravaActivity(models.Model) :
     average_temp = models.FloatField()
     
     
+class WebhookSubscription(models.Model) :
+    service = models.CharField(max_length=100)
+    sub_id = models.PositiveIntegerField(default=0)
+    
+    
 

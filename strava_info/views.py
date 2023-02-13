@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.db.models import Sum, Max, Min, Avg
-from django.http import JsonResponse, StreamingHttpResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 import requests
-from .models import StravaUser, StravaActivity
+from .models import StravaUser, StravaActivity, WebhookSubscription
 from .forms import ImperialStravaSearchForm, MetricStravaSearchForm
 from django.conf import settings
 import time
@@ -73,7 +75,7 @@ def index(request) :
     context = {}
     # See if the user has logged in.
     if user.is_authenticated :
-        # It has so no see if it has done the Strava OAuth.
+        # It has so now see if it has done the Strava OAuth.
         try :
             soc = user.social_auth
         except UserSocialAuth.DoesNotExist as e :
@@ -111,6 +113,15 @@ def index(request) :
                         context = get_base_context(request)
                         context["most_recent"] = most_recent
                         context["num_recent"] = num2word[len(most_recent)]
+                        if user.is_superuser() :
+                            # Figure out if we've subscribed to Strava webhooks yet.
+                            all_subs = WebhookSubscription.objects.filter(service="Strava")
+                            if all_subs :
+                                sub_id = all_subs[0].sub_id
+                                context["strava_web_subscribed"] = True
+                                context["strava_web_sub_id"] = sub_id
+                            else :
+                                context["strava_web_subscribed"] = False
     return render(request, 'strava_info/index.html', context)
 
 
@@ -136,7 +147,7 @@ def get_strava_data(request) :
         #download_strava_data(request)
         #return StreamingHttpResponse(download_strava_data_iter(request))
     except requests.exceptions.RequestException as e :
-        redirect('index')
+        return redirect('index')
     return redirect('index')
 
 def download_strava_data(request, start_from=None) :
@@ -973,3 +984,83 @@ def download_strava_data_iter(request, start_from=None) :
 
     yield "Click the home button<br>"
 
+    
+@login_required 
+def subscribe_to_strava_webhooks(request) :
+    # Only let a superuser do this.
+    if request.user.is_superuser() :
+        subscribe_url = "https://www.strava.com/api/v3/push_subscriptions"
+        callback_url = settings.STRAVA_CB_URL
+        verify_token = settings.STRAVA_SUB_VERIFY_TOKEN
+        payload = {'client_id': settings.SOCIAL_AUTH_STRAVA_KEY,
+                'client_secret': settings.SOCIAL_AUTH_STRAVA_SECRET,
+                'callback_url' : callback_url,
+                'verify_token' : verify_token}
+        try :
+            response = requests.post(url=subscribe_url, 
+                                    data=payload)
+        except requests.exceptions.RequestException as e :
+            raise(e)
+        else :
+            # Now get the subscription id and save the subscription
+            # to the database.
+            r = response.json()
+            sub = WebhookSubscription()
+            sub.service = "Strava"
+            sub.sub_id = r["id"]
+            sub.save()
+    return redirect('index')
+
+
+@login_required 
+def unsubscribe_strava_webhooks(request) :
+    # Only let a superuser do this.
+    if request.user.is_superuser() :
+        deleted_subs = []
+        all_subs = WebhookSubscription.objects.filter(service="Strava")
+        for sub in all_subs :
+            sub_id = sub.sub_id
+            unsub_url = "https://www.strava.com/api/v3/push_subscriptions/"+str(sub_id)
+            payload = {'client_id': settings.SOCIAL_AUTH_STRAVA_KEY,
+                       'client_secret': settings.SOCIAL_AUTH_STRAVA_SECRET,
+                       'id' : sub_id}
+            try :
+                response = requests.delete(url=unsub_url, 
+                                        data=payload)
+            except requests.exceptions.RequestException as e :
+                raise(e)
+            else :
+                if response.status_code == 204 :
+                    deleted_subs.append(sub_id)
+        for sub_id in deleted_subs :
+            WebhookSubscription.objects.filter(sub_id=sub_id).delete()
+            #all_subs.all().delete()
+    return redirect('index')
+        
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def handle_strava_webhook(request) :
+    if request.method == "GET" :
+        # We're dealing with a response to our request for a
+        # subscription. These are the only GET requests
+        # Strava webhooks will make.
+        validation_req = request.GET
+        mode = validation_req["hub.mode"]
+        challenge = validation_req["hub.challenge"]
+        hub_token = validation_req["hub.verify_token"]
+        if (mode and hub_token) :
+            if (hub_token == settings.STRAVA_SUB_VERIFY_TOKEN and
+                mode == "subscribe") :
+                response_data = {"hub.challenge":challenge}
+                return JsonResponse(data=response_data)
+        return HttpResponseForbidden("not allowed")
+    else :
+        # We're dealing with a post which is an indication of
+        # a webhook event.
+        all_subs = WebhookSubscription.objects.filter(service="Strava")
+        sub_id = all_subs[0].id
+        event = request.POST
+        if event["subscription_id"] != sub_id :
+            return HttpResponseForbidden("Post not allowed")
+        return HttpResponse('success')

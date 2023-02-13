@@ -24,14 +24,6 @@
                             </div>
                             <div class="col">
                                 <div class="container text-center">
-                                    {% comment %} <div class="row">
-                                        <div class="col">
-                                            <a class="btn btn-primary" href="{% url 'strava_info:update_strava_data' %}" role="button">Update</a>
-                                        </div>
-                                        <div class="col">
-                                            <a class="btn btn-primary" href="{% url 'strava_info:delete_strava_data' %}" role="button">Delete Your Data</a>
-                                        </div>
-                                    </div> {% endcomment %}
                                     <div class="row">
                                         <div class="col">
                                             <div>
@@ -42,6 +34,20 @@
                                 </div>
                             </div>
                         </div>
+                        {% if user.is_superuser %}
+                            <div class="row">
+                                <div class="col">
+                                        {% comment %} If we haven't subscribed to Strava webhooks yet,
+                                        do so. Otherwise, put up option to unsubscribe.  {% endcomment %}
+                                    {% if strava_web_subscribed %}
+                                        <p>Strava Webhook Subscription ID = {{strava_web_sub_id}}</p>
+                                        <a class="btn btn-primary" href="{% url 'strava_info:unsubscribe_strava_webhooks' %}" role="button">Unsubscribe from Webhooks</a>
+                                    {% else %}
+                                        <a class="btn btn-primary" href="{% url 'strava_info:subscribe_to_strava_webhooks' %}" role="button">Subscribe to Strava Webhooks</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
 
                     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
