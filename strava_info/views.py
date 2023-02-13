@@ -1041,26 +1041,27 @@ def unsubscribe_strava_webhooks(request) :
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def handle_strava_webhook(request) :
-    if request.method == "GET" :
-        # We're dealing with a response to our request for a
-        # subscription. These are the only GET requests
-        # Strava webhooks will make.
-        validation_req = request.GET
-        mode = validation_req["hub.mode"]
-        challenge = validation_req["hub.challenge"]
-        hub_token = validation_req["hub.verify_token"]
-        if (mode and hub_token) :
-            if (hub_token == settings.STRAVA_SUB_VERIFY_TOKEN and
-                mode == "subscribe") :
-                response_data = {"hub.challenge":challenge}
-                return JsonResponse(data=response_data)
-        return HttpResponseForbidden("not allowed")
-    else :
-        # We're dealing with a post which is an indication of
-        # a webhook event.
-        all_subs = WebhookSubscription.objects.filter(service="Strava")
-        sub_id = all_subs[0].id
-        event = request.POST
-        if event["subscription_id"] != sub_id :
-            return HttpResponseForbidden("Post not allowed")
-        return HttpResponse('success')
+    return HttpResponse("I'm here.")
+    # if request.method == "GET" :
+    #     # We're dealing with a response to our request for a
+    #     # subscription. These are the only GET requests
+    #     # Strava webhooks will make.
+    #     validation_req = request.GET
+    #     mode = validation_req["hub.mode"]
+    #     challenge = validation_req["hub.challenge"]
+    #     hub_token = validation_req["hub.verify_token"]
+    #     if (mode and hub_token) :
+    #         if (hub_token == settings.STRAVA_SUB_VERIFY_TOKEN and
+    #             mode == "subscribe") :
+    #             response_data = {"hub.challenge":challenge}
+    #             return JsonResponse(data=response_data)
+    #     return HttpResponseForbidden("not allowed")
+    # else :
+    #     # We're dealing with a post which is an indication of
+    #     # a webhook event.
+    #     all_subs = WebhookSubscription.objects.filter(service="Strava")
+    #     sub_id = all_subs[0].id
+    #     event = request.POST
+    #     if event["subscription_id"] != sub_id :
+    #         return HttpResponseForbidden("Post not allowed")
+    #     return HttpResponse('success')
