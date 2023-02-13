@@ -113,7 +113,7 @@ def index(request) :
                         context = get_base_context(request)
                         context["most_recent"] = most_recent
                         context["num_recent"] = num2word[len(most_recent)]
-                        if user.is_superuser() :
+                        if user.is_superuser :
                             # Figure out if we've subscribed to Strava webhooks yet.
                             all_subs = WebhookSubscription.objects.filter(service="Strava")
                             if all_subs :
@@ -988,7 +988,7 @@ def download_strava_data_iter(request, start_from=None) :
 @login_required 
 def subscribe_to_strava_webhooks(request) :
     # Only let a superuser do this.
-    if request.user.is_superuser() :
+    if request.user.is_superuser :
         subscribe_url = "https://www.strava.com/api/v3/push_subscriptions"
         callback_url = settings.STRAVA_CB_URL
         verify_token = settings.STRAVA_SUB_VERIFY_TOKEN
@@ -1015,7 +1015,7 @@ def subscribe_to_strava_webhooks(request) :
 @login_required 
 def unsubscribe_strava_webhooks(request) :
     # Only let a superuser do this.
-    if request.user.is_superuser() :
+    if request.user.is_superuser :
         deleted_subs = []
         all_subs = WebhookSubscription.objects.filter(service="Strava")
         for sub in all_subs :
