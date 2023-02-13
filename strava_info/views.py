@@ -987,35 +987,65 @@ def download_strava_data_iter(request, start_from=None) :
 
     yield "Click the home button<br>"
 
-    
+
+def send_strava_webhook_subscription_request() :
+    subscribe_url = "https://www.strava.com/api/v3/push_subscriptions"
+    callback_url = settings.STRAVA_CB_URL
+    verify_token = settings.STRAVA_SUB_VERIFY_TOKEN
+    payload = {'client_id': settings.SOCIAL_AUTH_STRAVA_KEY,
+            'client_secret': settings.SOCIAL_AUTH_STRAVA_SECRET,
+            'callback_url' : callback_url,
+            'verify_token' : verify_token}
+    try :
+        logger.warning("Subscribe: Sending subscription request")
+        response = requests.post(url=subscribe_url, 
+                                data=payload)
+        logger.warning("Subscribe: Got a response")
+    except requests.exceptions.RequestException as e :
+        raise(e)
+    else :
+        # Now get the subscription id and save the subscription
+        # to the database.
+        r = response.json()
+        logger.warning("Subscribe got this reponse " + str(r))
+        if not r.get("errors") :
+            sub = WebhookSubscription()
+            sub.service = "Strava"
+            sub.sub_id = r["id"]
+            sub.save()
+
 @login_required 
 def subscribe_to_strava_webhooks(request) :
     # Only let a superuser do this.
     if request.user.is_superuser :
-        subscribe_url = "https://www.strava.com/api/v3/push_subscriptions"
-        callback_url = settings.STRAVA_CB_URL
-        verify_token = settings.STRAVA_SUB_VERIFY_TOKEN
-        payload = {'client_id': settings.SOCIAL_AUTH_STRAVA_KEY,
-                'client_secret': settings.SOCIAL_AUTH_STRAVA_SECRET,
-                'callback_url' : callback_url,
-                'verify_token' : verify_token}
-        try :
-            logger.warning("Subscribe: Sending subscription request")
-            response = requests.post(url=subscribe_url, 
-                                    data=payload)
-            logger.warning("Subscribe: Got a response")
-        except requests.exceptions.RequestException as e :
-            raise(e)
-        else :
-            # Now get the subscription id and save the subscription
-            # to the database.
-            r = response.json()
-            logger.warning("Subscribe got this reponse " + str(r))
-            if not r.get("errors") :
-                sub = WebhookSubscription()
-                sub.service = "Strava"
-                sub.sub_id = r["id"]
-                sub.save()
+        logger.warning("Subscribe starting thread.")
+        t = threading.Thread(target=send_strava_webhook_subscription_request)
+        t.setDaemon(True)
+        t.start()
+        # subscribe_url = "https://www.strava.com/api/v3/push_subscriptions"
+        # callback_url = settings.STRAVA_CB_URL
+        # verify_token = settings.STRAVA_SUB_VERIFY_TOKEN
+        # payload = {'client_id': settings.SOCIAL_AUTH_STRAVA_KEY,
+        #         'client_secret': settings.SOCIAL_AUTH_STRAVA_SECRET,
+        #         'callback_url' : callback_url,
+        #         'verify_token' : verify_token}
+        # try :
+        #     logger.warning("Subscribe: Sending subscription request")
+        #     response = requests.post(url=subscribe_url, 
+        #                             data=payload)
+        #     logger.warning("Subscribe: Got a response")
+        # except requests.exceptions.RequestException as e :
+        #     raise(e)
+        # else :
+        #     # Now get the subscription id and save the subscription
+        #     # to the database.
+        #     r = response.json()
+        #     logger.warning("Subscribe got this reponse " + str(r))
+        #     if not r.get("errors") :
+        #         sub = WebhookSubscription()
+        #         sub.service = "Strava"
+        #         sub.sub_id = r["id"]
+        #         sub.save()
     return redirect('index')
 
 
