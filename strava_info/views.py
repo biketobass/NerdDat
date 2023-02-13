@@ -1007,8 +1007,8 @@ def subscribe_to_strava_webhooks(request) :
         else :
             # Now get the subscription id and save the subscription
             # to the database.
-            logger.info("Subscribe got this reponse " + r)
             r = response.json()
+            logger.info("Subscribe got this reponse " + r)
             
             sub = WebhookSubscription()
             sub.service = "Strava"
