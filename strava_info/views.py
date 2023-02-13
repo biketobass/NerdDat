@@ -16,8 +16,11 @@ import distinctipy
 import django.template.loader as loader
 import threading
 from social_django.models import UserSocialAuth
+import logging
 
 # Helper method for saving strava data after downloading
+
+logger = logging.getLogger(__name__)
 
 def save_strava_data(results, the_user) :
     # results is a list. Each element is a dictionary.
@@ -1004,7 +1007,9 @@ def subscribe_to_strava_webhooks(request) :
         else :
             # Now get the subscription id and save the subscription
             # to the database.
+            logger.info("Subscribe got this reponse " + r)
             r = response.json()
+            
             sub = WebhookSubscription()
             sub.service = "Strava"
             sub.sub_id = r["id"]
@@ -1041,28 +1046,27 @@ def unsubscribe_strava_webhooks(request) :
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def handle_strava_webhook(request) :
-    print("Here's the request ", request.GET)
-    return HttpResponse(request.GET)
-    # if request.method == "GET" :
-    #     # We're dealing with a response to our request for a
-    #     # subscription. These are the only GET requests
-    #     # Strava webhooks will make.
-    #     validation_req = request.GET
-    #     mode = validation_req["hub.mode"]
-    #     challenge = validation_req["hub.challenge"]
-    #     hub_token = validation_req["hub.verify_token"]
-    #     if (mode and hub_token) :
-    #         if (hub_token == settings.STRAVA_SUB_VERIFY_TOKEN and
-    #             mode == "subscribe") :
-    #             response_data = {"hub.challenge":challenge}
-    #             return JsonResponse(data=response_data)
-    #     return HttpResponseForbidden("not allowed")
-    # else :
-    #     # We're dealing with a post which is an indication of
-    #     # a webhook event.
-    #     all_subs = WebhookSubscription.objects.filter(service="Strava")
-    #     sub_id = all_subs[0].id
-    #     event = request.POST
-    #     if event["subscription_id"] != sub_id :
-    #         return HttpResponseForbidden("Post not allowed")
-    #     return HttpResponse('success')
+    logger.info("Handle webhook get this request " + request)
+    if request.method == "GET" :
+        # We're dealing with a response to our request for a
+        # subscription. These are the only GET requests
+        # Strava webhooks will make.
+        validation_req = request.GET
+        mode = validation_req["hub.mode"]
+        challenge = validation_req["hub.challenge"]
+        hub_token = validation_req["hub.verify_token"]
+        if (mode and hub_token) :
+            if (hub_token == settings.STRAVA_SUB_VERIFY_TOKEN and
+                mode == "subscribe") :
+                response_data = {"hub.challenge":challenge}
+                return JsonResponse(data=response_data)
+        return HttpResponseForbidden("not allowed")
+    else :
+        # We're dealing with a post which is an indication of
+        # a webhook event.
+        all_subs = WebhookSubscription.objects.filter(service="Strava")
+        sub_id = all_subs[0].id
+        event = request.POST
+        if event["subscription_id"] != sub_id :
+            return HttpResponseForbidden("Post not allowed")
+        return HttpResponse('success')
