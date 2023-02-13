@@ -1000,8 +1000,10 @@ def subscribe_to_strava_webhooks(request) :
                 'callback_url' : callback_url,
                 'verify_token' : verify_token}
         try :
+            logger.warning("Subscribe: Sending subscription request")
             response = requests.post(url=subscribe_url, 
                                     data=payload)
+            logger.warning("Subscribe: Got a response")
         except requests.exceptions.RequestException as e :
             raise(e)
         else :
@@ -1009,11 +1011,11 @@ def subscribe_to_strava_webhooks(request) :
             # to the database.
             r = response.json()
             logger.warning("Subscribe got this reponse " + str(r))
-            
-            sub = WebhookSubscription()
-            sub.service = "Strava"
-            sub.sub_id = r["id"]
-            sub.save()
+            if not r.get("errors") :
+                sub = WebhookSubscription()
+                sub.service = "Strava"
+                sub.sub_id = r["id"]
+                sub.save()
     return redirect('index')
 
 
@@ -1052,14 +1054,19 @@ def handle_strava_webhook(request) :
         # subscription. These are the only GET requests
         # Strava webhooks will make.
         validation_req = request.GET
+        logger.warning("handle: validation_req is " + str(validation_req))
         mode = validation_req["hub.mode"]
         challenge = validation_req["hub.challenge"]
         hub_token = validation_req["hub.verify_token"]
+        logger.warning("mode = " + mode + " challenge = " + challenge + " hub_token = " + hub_token)
         if (mode and hub_token) :
             if (hub_token == settings.STRAVA_SUB_VERIFY_TOKEN and
                 mode == "subscribe") :
                 response_data = {"hub.challenge":challenge}
-                return JsonResponse(data=response_data)
+                json_response = JsonResponse(data=response_data)
+                logger.warning("handle sending this json response " + str(json_response))
+                return json_response
+        logger.warning("handle sending forbidden")
         return HttpResponseForbidden("not allowed")
     else :
         # We're dealing with a post which is an indication of
