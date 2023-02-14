@@ -1093,7 +1093,7 @@ def unsubscribe_strava_webhooks(request) :
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def handle_strava_webhook(request) :
-    logger.warning("Handle webhook got this request " + str(request))
+    #logger.warning("Handle webhook got this request " + str(request))
     if request.method == "GET" :
         # We're dealing with a response to our request for a
         # subscription. These are the only GET requests
@@ -1121,7 +1121,11 @@ def handle_strava_webhook(request) :
         all_subs = WebhookSubscription.objects.filter(service="Strava")
         sub_id = all_subs[0].sub_id
         event = request.POST
+        body = request.body
+        method = request.method
         logger.warning("Here's the post " + str(event))
+        logger.warning("  body = " + body)
+        logger.warning("  method = " + method)
         if not event.get("subscription_id") or event["subscription_id"] != sub_id :
             logger.warning("Handle not allowing")
             return HttpResponseForbidden("Post not allowed")
