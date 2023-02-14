@@ -1119,12 +1119,9 @@ def handle_strava_webhook(request) :
         # a webhook event.
         all_subs = WebhookSubscription.objects.filter(service="Strava")
         sub_id = all_subs[0].sub_id
-        event = request.POST
-        body = json.loads(request.body)
-        method = request.method
-        logger.warning("Here's the post " + str(event))
-        logger.warning("  body = " + str(body))
-        logger.warning("  method = " + method)
+        #event = request.POST
+        event = json.loads(request.body)
+        logger.warning("  body = " + str(event))
         if not event.get("subscription_id") or event["subscription_id"] != sub_id :
             logger.warning("Handle not allowing")
             return HttpResponseForbidden("Post not allowed")
