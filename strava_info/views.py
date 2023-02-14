@@ -1123,7 +1123,7 @@ def handle_strava_webhook(request) :
         body = json.loads(request.body)
         method = request.method
         logger.warning("Here's the post " + str(event))
-        logger.warning("  body = " + body)
+        logger.warning("  body = " + str(body))
         logger.warning("  method = " + method)
         if not event.get("subscription_id") or event["subscription_id"] != sub_id :
             logger.warning("Handle not allowing")
