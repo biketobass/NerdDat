@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
@@ -22,56 +23,58 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def save_strava_activity(result, the_user) :
+    sa = StravaActivity()
+    sa.site_user = the_user
+    sa.activity_id = result.get("id")
+    sa.name = result.get("name")
+    sa.distance_meters = result.get("distance",0.0)
+    sa.moving_time_sec = result.get("moving_time",0)
+    sa.elapsed_time_sec = result.get("elapsed_time")
+    sa.total_elevation_gain_m = result.get("total_elevation_gain",0.0)
+    sa.type = result.get("type", "Unknown")
+    sa.sport_type = result.get("sport_type", "Unknown")
+    sa.start_date = result.get("start_date")
+    sa.start_date_local = result.get("start_date_local")
+    sa.timezone = result.get("timezone")
+    sa.utc_offset = result.get("utc_offset")
+    sa.location_country = result.get("location_country")
+    sa.achievement_count = result.get("achievement_count")
+    sa.kudos_count = result.get("kudos_count")
+    sa.average_speed_mps = result.get("average_speed", 0.0)
+    sa.max_speed_mps = result.get("max_speed", 0.0)
+    sa.has_heartrate = result.get("has_heartrate")
+    sa.elev_high_m = result.get("elev_high", 0.0)
+    sa.elev_low_m = result.get("elev_low", 0.0)
+    sa.pr_count = result.get("pr_count")
+    sa.average_cadence = result.get("average_cadence", 0.0)
+    sa.average_watts = result.get("average_watts", 0.0)
+    sa.max_watts = result.get("max_watts", 0.0)
+    sa.weighted_average_watts = result.get("weighted_average_watts", 0.0)
+    sa.kilojoules = result.get("kilojoules", 0.0)
+    sa.average_heartrate = result.get("average_heartrate", 0.0)
+    sa.max_heartrate = result.get("max_heartrate", 0.0)
+    sa.suffer_score = result.get("suffer_score", 0.0)
+    sa.elapsed_time_min = result["elapsed_time"] / 60
+    sa.moving_time_min = result.get("moving_time", 0) / 60
+    sa.elev_high_ft = result.get("elev_high", 0.0) * 3.28084
+    sa.elev_low_ft = result.get('elev_low',0.0) * 3.28084
+    sa.elev_gain_ft = result.get('total_elevation_gain',0.0) * 3.28084
+    sa.distance_miles = result.get('distance',0.0) * 0.000621371
+    sa.distance_km = result.get('distance',0.0)/1000
+    sa.feet_per_mile = sa.elev_gain_ft / sa.distance_miles if sa.distance_miles > 0.0 else 0.0
+    sa.meters_per_km = result.get("total_elevation_gain",0.0) / sa.distance_km if sa.distance_km > 0.0 else 0.0
+    sa.average_speed_mph = result.get('average_speed',0.0) * 2.23694
+    sa.average_speed_kph = result.get('average_speed',0.0) * 3.6
+    sa.max_speed_mph = result.get('max_speed',0.0) * 2.23694
+    sa.max_speed_kph = result.get('max_speed',0.0) * 3.6
+    sa.average_temp = result.get("average_temp",0.0)
+    sa.save()
+
 def save_strava_data(results, the_user) :
     # results is a list. Each element is a dictionary.
     for result in results :
-        sa = StravaActivity()
-        sa.site_user = the_user
-        sa.activity_id = result.get("id")
-        sa.name = result.get("name")
-        sa.distance_meters = result.get("distance",0.0)
-        sa.moving_time_sec = result.get("moving_time",0)
-        sa.elapsed_time_sec = result.get("elapsed_time")
-        sa.total_elevation_gain_m = result.get("total_elevation_gain",0.0)
-        sa.type = result.get("type", "Unknown")
-        sa.sport_type = result.get("sport_type", "Unknown")
-        sa.start_date = result.get("start_date")
-        sa.start_date_local = result.get("start_date_local")
-        sa.timezone = result.get("timezone")
-        sa.utc_offset = result.get("utc_offset")
-        sa.location_country = result.get("location_country")
-        sa.achievement_count = result.get("achievement_count")
-        sa.kudos_count = result.get("kudos_count")
-        sa.average_speed_mps = result.get("average_speed", 0.0)
-        sa.max_speed_mps = result.get("max_speed", 0.0)
-        sa.has_heartrate = result.get("has_heartrate")
-        sa.elev_high_m = result.get("elev_high", 0.0)
-        sa.elev_low_m = result.get("elev_low", 0.0)
-        sa.pr_count = result.get("pr_count")
-        sa.average_cadence = result.get("average_cadence", 0.0)
-        sa.average_watts = result.get("average_watts", 0.0)
-        sa.max_watts = result.get("max_watts", 0.0)
-        sa.weighted_average_watts = result.get("weighted_average_watts", 0.0)
-        sa.kilojoules = result.get("kilojoules", 0.0)
-        sa.average_heartrate = result.get("average_heartrate", 0.0)
-        sa.max_heartrate = result.get("max_heartrate", 0.0)
-        sa.suffer_score = result.get("suffer_score", 0.0)
-        sa.elapsed_time_min = result["elapsed_time"] / 60
-        sa.moving_time_min = result.get("moving_time", 0) / 60
-        sa.elev_high_ft = result.get("elev_high", 0.0) * 3.28084
-        sa.elev_low_ft = result.get('elev_low',0.0) * 3.28084
-        sa.elev_gain_ft = result.get('total_elevation_gain',0.0) * 3.28084
-        sa.distance_miles = result.get('distance',0.0) * 0.000621371
-        sa.distance_km = result.get('distance',0.0)/1000
-        sa.feet_per_mile = sa.elev_gain_ft / sa.distance_miles if sa.distance_miles > 0.0 else 0.0
-        sa.meters_per_km = result.get("total_elevation_gain",0.0) / sa.distance_km if sa.distance_km > 0.0 else 0.0
-        sa.average_speed_mph = result.get('average_speed',0.0) * 2.23694
-        sa.average_speed_kph = result.get('average_speed',0.0) * 3.6
-        sa.max_speed_mph = result.get('max_speed',0.0) * 2.23694
-        sa.max_speed_kph = result.get('max_speed',0.0) * 3.6
-        sa.average_temp = result.get("average_temp",0.0)
-        sa.save()
-        
+        save_strava_activity(result, the_user)
 
 def index(request) :
     user = request.user
@@ -268,18 +271,30 @@ def update_strava_data(request) :
     return redirect('index')
 
 
-
+def remove_user_strava_data(user, deauthorized_strava=False) :
+    # Get all of this user's StavaActivities.
+    all_acts = StravaActivity.objects.filter(site_user=user)
+    all_acts.all().delete()
+    su = user.stravauser
+    su.has_completed_initial_download = False
+    if deauthorized_strava :
+        su.is_strava_verified = False
+        # Also remove the social auth record
+        soc = user.social_auth
+        soc.delete()
+    su.save()
 
 @login_required
 def delete_strava_data(request) :
     if request.method == "POST" :
         user = request.user
-        # Get all of this user's StavaActivities.
-        all_acts = StravaActivity.objects.filter(site_user=request.user)
-        all_acts.all().delete()
-        su = user.stravauser
-        su.has_completed_initial_download = False
-        su.save()
+        remove_user_strava_data(user)
+        # # Get all of this user's StavaActivities.
+        # all_acts = StravaActivity.objects.filter(site_user=request.user)
+        # all_acts.all().delete()
+        # su = user.stravauser
+        # su.has_completed_initial_download = False
+        # su.save()
         messages.success(request, "Sucessfully deleted!")
         return redirect('index')
     context = get_base_context(request)
@@ -997,17 +1012,17 @@ def send_strava_webhook_subscription_request() :
             'callback_url' : callback_url,
             'verify_token' : verify_token}
     try :
-        logger.warning("Subscribe: Sending subscription request")
+        #logger.warning("Subscribe: Sending subscription request")
         response = requests.post(url=subscribe_url, 
                                 data=payload)
-        logger.warning("Subscribe: Got a response")
+        #logger.warning("Subscribe: Got a response")
     except requests.exceptions.RequestException as e :
         raise(e)
     else :
         # Now get the subscription id and save the subscription
         # to the database.
         r = response.json()
-        logger.warning("Subscribe got this reponse " + str(r))
+        #logger.warning("Subscribe got this reponse " + str(r))
         if not r.get("errors") :
             sub = WebhookSubscription()
             sub.service = "Strava"
@@ -1018,7 +1033,7 @@ def send_strava_webhook_subscription_request() :
 def subscribe_to_strava_webhooks(request) :
     # Only let a superuser do this.
     if request.user.is_superuser :
-        logger.warning("Subscribe starting thread.")
+        #logger.warning("Subscribe starting thread.")
         t = threading.Thread(target=send_strava_webhook_subscription_request)
         t.setDaemon(True)
         t.start()
@@ -1101,9 +1116,82 @@ def handle_strava_webhook(request) :
     else :
         # We're dealing with a post which is an indication of
         # a webhook event.
+        meta = request.META
+        logger.warning("Handle webhook has POST request with this meta: " + str(meta))
         all_subs = WebhookSubscription.objects.filter(service="Strava")
-        sub_id = all_subs[0].id
+        sub_id = all_subs[0].sub_id
         event = request.POST
-        if event["subscription_id"] != sub_id :
+        logger.warning("Here's the post " + str(event))
+        if not event.get("subscription_id") or event["subscription_id"] != sub_id :
+            logger.warning("Handle not allowing")
             return HttpResponseForbidden("Post not allowed")
+        # We've come this far so handle the webhook.
+        t = threading.Thread(target=async_handle, args=[event])
+        t.setDaemon(True)
+        t.start()
         return HttpResponse('success')
+    
+def async_handle(event) :
+    #subscription_id = event["subscription_id"]
+    aspect_type = event.get("aspect_type") # 'create', 'update', or 'delete'
+    #event_time = event.get("event_time") # When the event occured.
+    object_id = event.get("object_id") # Activity ID if activity, athlete id if athlete.
+    object_type = event.get("object_type") # 'activity' or 'athlete'
+    owner_id = event.get("owner_id") # Athlete id
+    updates = event.get("updates") # Dictionary. For activity update events, keys can contain "title," "type," and "private,"
+                                # which is always "true" (activity visibility set to Only You) or "false"
+                                # (activity visibility set to Followers Only or Everyone). For app deauthorization events,
+                                # there is always an "authorized" : "false" key-value pair.
+    # Check if any of those are None
+    if not aspect_type :
+        logger.warning("aspect_type is None.")
+    if not object_id :
+        logger.warning("object_id is None.")
+    if not object_type :
+        logger.warning("object_type is None.")
+    if not owner_id :
+        logger.warning("owner_id is None.")
+    if not updates :
+        logger.warning("updates is None.")
+    # Check tokens.
+    # Need to get the user with the owner_id.
+    u_id = UserSocialAuth.objects.filter(provider="strava", uid=owner_id)[0].user_id
+    site_user = User.objects.filter(id=u_id)[0]
+    strava_user = site_user.stravauser
+    try :
+        check_and_refresh_access_token(site_user)
+    except requests.exceptions.RequestException as e :
+        raise(e)
+    # Deal with activities 
+    if object_type == "activity" :
+        # Deal with creating a new activity.
+        if aspect_type == "create" :
+            logger.warning("New event created")
+            # Get the new activity.
+            url = "https://www.strava.com/api/v3/activities/"+str(object_id)
+            payload = {'access_token': strava_user.access_token}
+            try:
+                r = requests.get(url, params = payload)
+            except requests.exceptions.RequestException as e:
+                raise(e)
+            r = r.json()
+            logger.warning("Got the new activity with dict = " + r)
+            save_strava_activity(r, site_user)
+        elif aspect_type == "update" :
+            logger.warning("update to existing event")
+            act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
+            if updates.get("title") :
+                # Get the currently saved version of this activity
+                act.name=updates["title"]
+            if updates.get("type") :
+                act.type=updates["type"]
+                act.sport_type=updates["type"]
+            act.save()
+            if updates.get("authorized") :
+                logger.warning("Deauthorization")
+                if updates["authorizied"] == "false":
+                    # We need to record that the user has deauthorized
+                    # the app from looking at their data.
+                    remove_user_strava_data(site_user, True)
+                    
+    
