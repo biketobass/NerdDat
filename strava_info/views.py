@@ -18,6 +18,7 @@ import django.template.loader as loader
 import threading
 from social_django.models import UserSocialAuth
 import logging
+import json
 
 # Helper method for saving strava data after downloading
 
@@ -1116,12 +1117,10 @@ def handle_strava_webhook(request) :
     else :
         # We're dealing with a post which is an indication of
         # a webhook event.
-        meta = request.META
-        logger.warning("Handle webhook has POST request with this meta: " + str(meta))
         all_subs = WebhookSubscription.objects.filter(service="Strava")
         sub_id = all_subs[0].sub_id
         event = request.POST
-        body = request.body
+        body = json.loads(request.body)
         method = request.method
         logger.warning("Here's the post " + str(event))
         logger.warning("  body = " + body)
