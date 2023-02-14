@@ -1158,16 +1158,17 @@ def async_handle(event) :
     u_id = UserSocialAuth.objects.filter(provider="strava", uid=owner_id)[0].user_id
     site_user = User.objects.filter(id=u_id)[0]
     strava_user = site_user.stravauser
-    try :
-        check_and_refresh_access_token(site_user)
-    except requests.exceptions.RequestException as e :
-        raise(e)
+    
     # Deal with activities 
     if object_type == "activity" :
         # Deal with creating a new activity.
         if aspect_type == "create" :
             logger.warning("New event created")
             # Get the new activity.
+            try :
+                check_and_refresh_access_token(site_user)
+            except requests.exceptions.RequestException as e :
+                raise(e)
             url = "https://www.strava.com/api/v3/activities/"+str(object_id)
             payload = {'access_token': strava_user.access_token}
             try:
@@ -1175,7 +1176,7 @@ def async_handle(event) :
             except requests.exceptions.RequestException as e:
                 raise(e)
             r = r.json()
-            logger.warning("Got the new activity with dict = " + r)
+            logger.warning("Got the new activity with dict = " + str(r))
             save_strava_activity(r, site_user)
         elif aspect_type == "update" :
             logger.warning("update to existing event")
@@ -1193,5 +1194,9 @@ def async_handle(event) :
                     # We need to record that the user has deauthorized
                     # the app from looking at their data.
                     remove_user_strava_data(site_user, True)
+        elif aspect_type == "delete" :
+            logger.warning("deleting existing activity")
+            act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
+            act.delete()
                     
     
