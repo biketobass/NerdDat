@@ -1143,16 +1143,16 @@ def async_handle(event) :
                                 # (activity visibility set to Followers Only or Everyone). For app deauthorization events,
                                 # there is always an "authorized" : "false" key-value pair.
     # Check if any of those are None
-    if not aspect_type :
-        logger.warning("aspect_type is None.")
-    if not object_id :
-        logger.warning("object_id is None.")
-    if not object_type :
-        logger.warning("object_type is None.")
-    if not owner_id :
-        logger.warning("owner_id is None.")
-    if not updates :
-        logger.warning("updates is None.")
+    # if not aspect_type :
+    #     logger.warning("aspect_type is None.")
+    # if not object_id :
+    #     logger.warning("object_id is None.")
+    # if not object_type :
+    #     logger.warning("object_type is None.")
+    # if not owner_id :
+    #     logger.warning("owner_id is None.")
+    # if not updates :
+    #     logger.warning("updates is None.")
     # Check tokens.
     # Need to get the user with the owner_id.
     u_id = UserSocialAuth.objects.filter(provider="strava", uid=owner_id)[0].user_id
@@ -1164,7 +1164,7 @@ def async_handle(event) :
         # Deal with creating a new activity.
         logger.warning("Dealing with an activity update")
         if aspect_type == "create" :
-            logger.warning("New event created at Strava")
+        #    logger.warning("New event created at Strava")
             # Get the new activity.
             try :
                 check_and_refresh_access_token(site_user)
@@ -1177,10 +1177,10 @@ def async_handle(event) :
             except requests.exceptions.RequestException as e:
                 raise(e)
             r = r.json()
-            logger.warning("Got the new activity with dict = " + str(r))
+        #    logger.warning("Got the new activity with dict = " + str(r))
             save_strava_activity(r, site_user)
         elif aspect_type == "update" :
-            logger.warning("update to existing event")
+        #    logger.warning("update to existing event")
             act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
             if updates.get("title") :
                 # Get the currently saved version of this activity
@@ -1197,7 +1197,7 @@ def async_handle(event) :
                     logger.warning("Removing user's strava data")
                     remove_user_strava_data(site_user, True)
         elif aspect_type == "delete" :
-            logger.warning("deleting existing activity")
+         #   logger.warning("deleting existing activity")
             act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
             act.delete()
                     
