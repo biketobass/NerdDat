@@ -85,13 +85,13 @@ def index(request) :
         # It has so now see if it has done the Strava OAuth.
         try :
             soc = user.social_auth
+            strava_login = soc.get(provider='strava')
         except UserSocialAuth.DoesNotExist as e :
             # The user hasn't been through the OAuth process. Don't do anything
             # then.
             pass
         else :
             # The user has been through the Strava OAuth process.
-            strava_login = soc.get(provider='strava')
             if strava_login :
                 # Add the expires_at field to extra data.
                 strava_login.extra_data["expires_at"] = strava_login.extra_data["auth_time"] + strava_login.extra_data["expires"]
