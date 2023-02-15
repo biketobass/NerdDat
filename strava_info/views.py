@@ -269,6 +269,10 @@ def update_strava_data(request) :
         #return StreamingHttpResponse(download_strava_data_iter(request, most_recent_date))
     except requests.exceptions.RequestException as e :
         return redirect('index')
+    else :
+        su = request.user.strava_user
+        su.downloading = True
+        su.save()
     return redirect('index')
 
 
