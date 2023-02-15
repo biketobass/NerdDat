@@ -270,7 +270,7 @@ def update_strava_data(request) :
     except requests.exceptions.RequestException as e :
         return redirect('index')
     else :
-        su = request.user.strava_user
+        su = request.user.stravauser
         su.downloading = True
         su.save()
     return redirect('index')
