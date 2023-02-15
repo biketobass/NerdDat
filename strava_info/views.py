@@ -151,17 +151,16 @@ def get_strava_data(request) :
         t = threading.Thread(target=download_strava_data, args=[request])
         t.setDaemon(True)
         t.start()
-        #download_strava_data(request)
-        #return StreamingHttpResponse(download_strava_data_iter(request))
     except requests.exceptions.RequestException as e :
         return redirect('index')
+    else :
+        su = request.user.strava_user
+        su.downloading = True
+        su.save()
     return redirect('index')
 
 def download_strava_data(request, start_from=None) :
     su = request.user.stravauser
-    #soc = request.user.social_auth
-    #strava_soc = soc.get(provider='strava')
-    
     # Here need to get the user's access and refresh tokens from the DB.
     # If access_token has expired, use the refresh_token to get the new access_token
     try :
@@ -204,6 +203,7 @@ def download_strava_data(request, start_from=None) :
     # Now that you have it all, save it.
     save_strava_data(results, request.user)
     su.has_completed_initial_download = True
+    su.downloading = False
     su.save()
     # Here we need to update the user's pie chart color dictionary.
     su.pie_color_palette = compute_pie_colors(request.user)

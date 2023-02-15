@@ -5,7 +5,15 @@
     {% if user.is_authenticated %}
         <h1>Welcome back, {{ user.first_name}}</h1>
         {% if user.stravauser.is_strava_verified %}
-                {% if user.stravauser.has_completed_initial_download %}
+                {% if user.stravauser.downloading %}
+                    <div class="container text-left">
+                        <div class="row">
+                            <div class="col">
+                                <p>Downloading your Strava data could take a few minutes. Please refresh this page in a minute to see if it is done.</p>
+                            </div>
+                        </div>
+                    </div>
+                {% elif user.stravauser.has_completed_initial_download %}
                     <div class="container text-left">
                         <div class="row">
                             <div class="col">
