@@ -16,8 +16,8 @@
                     {% else %}
                         <p><a href="{% url 'strava_info:switch_units' %}">Switch to Imperial Units</a></p>
                     {% endif %}
-                    <p><a href="{% url 'strava_info:update_strava_data' %}">Update Your Strava Data</a></p>
-                    <p><a href="{% url 'strava_info:delete_strava_data' %}">Delete Your Strava Data</a></p>
+                    {% comment %} <p><a href="{% url 'strava_info:update_strava_data' %}">Update Your Strava Data</a></p> {% endcomment %}
+                    {% comment %} <p><a href="{% url 'strava_info:delete_strava_data' %}">Delete Your Strava Data</a></p> {% endcomment %}
                 {% endif %}
                 <p><a href="{% url 'users_app:delete_nerd_account' %}">Delete Your NerdDat Account</a></p>
                 <p><a href="{% url 'users_app:change_password' %}">Change Your Password</a></p>

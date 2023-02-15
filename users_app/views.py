@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
+from django.conf import settings
 
 def register(request) :
     if request.method == "POST" :
@@ -15,6 +16,21 @@ def register(request) :
     else :
         register_form = CustomRegisterForm()
     return render(request, 'users_app/register.html', {'register_form': register_form})
+
+def register_invite(request) :
+    if request.method == "POST" :
+        register_form = CustomRegisterForm(request.POST)
+        if register_form.is_valid() :
+            register_form.save()
+            messages.success(request, ('New User Account Created. Log in to get started.'))
+            return redirect('users_app:login')
+    else :
+        register_form = CustomRegisterForm()
+    invited = False
+    if request.path.find(settings.INVITATION_REG_URL_LONG_PART) != -1 :
+        invited = True
+    return render(request, 'users_app/register.html', {'register_form': register_form, 'invited' : invited})
+
 
 @login_required
 def delete_nerd_account(request) :

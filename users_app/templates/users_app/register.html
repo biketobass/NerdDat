@@ -7,20 +7,8 @@
 
 {% block content %}
 
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <br>
-            <h2>Regitration Not Live Yet</h2>
-            <p>Thank you for your interest. This site is still in testing. Registration is by inviation only.</p>
-            <p>Return to the <a href="{% url 'index' %}">homepage</a>.</p>
-        </div>
-    </div>
-    
-</div>
-
-
-    {% comment %} <div class="container">
+{% if invited %}
+    <div class="container">
         <br>
         <h2>Register for Fitness Data Synthesis</h2>
         {% if messages %}
@@ -38,5 +26,23 @@
             {{ register_form|crispy }}
             <button class="btn btn-primary mb-5" type="submit">Register</button>
         </form>
-    </div> {% endcomment %}
+    </div>
+{% else %}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <br>
+                <h2>Registration Not Live Yet</h2>
+                <p>Thank you for your interest. This site is still in testing. Registration is by inviation only.</p>
+                <p>Return to the <a href="{% url 'index' %}">homepage</a>.</p>
+            </div>
+        </div>
+        
+    </div>
+
+{% endif %}
+
+
+
+    
 {% endblock content %}
