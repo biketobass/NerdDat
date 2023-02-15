@@ -101,7 +101,7 @@ def index(request) :
                     su = user.stravauser
                 except StravaUser.DoesNotExist as e :
                     # We haven't created one yet, so do so and
-                    # set the verified flag to tru.
+                    # set the verified flag to true.
                     user.stravauser = StravaUser()
                     user.stravauser.is_strava_verified = True
                     user.stravauser.token_type = strava_login.extra_data["token_type"]
