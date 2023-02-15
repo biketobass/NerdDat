@@ -115,7 +115,8 @@
                     <div class="container text-center">
                         <div class="row">
                             <div class="col">
-                                Download your Strava Data to get started.       
+                                <p>Thank you for authorizing NerdDad to work with your Strava data. The final step is to download your Strava Data
+                                by clicking the button below.</p>
                             </div>
                             <div class="col">
                                 <a class="btn btn-primary" href="{% url 'strava_info:get_strava_data' %}" role="button">Download Strava Data</a>
@@ -124,7 +125,10 @@
                     </div>
             {% endif %}
         {% else %}
-            <p>Dude, you need to OAuth</p>
+            <p>To get started, please authorize NerdDat to download your Strava data by clicking the button below. This will take you
+                to Strava's authorization page where you can chose to give NerdDad access. You can always undo this by
+                revoking NerdDat's access in Settings/My Apps on the Strava website.
+            </p>
             <a class="btn btn-primary" href="{% url 'social:begin' 'strava' %}" role="button">Connect to Strava</a>
         {% endif %}        
 
