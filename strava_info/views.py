@@ -1162,8 +1162,9 @@ def async_handle(event) :
     # Deal with activities 
     if object_type == "activity" :
         # Deal with creating a new activity.
+        logger.warning("Dealing with an activity update")
         if aspect_type == "create" :
-            logger.warning("New event created")
+            logger.warning("New event created at Strava")
             # Get the new activity.
             try :
                 check_and_refresh_access_token(site_user)
@@ -1193,6 +1194,7 @@ def async_handle(event) :
                 if updates["authorizied"] == "false":
                     # We need to record that the user has deauthorized
                     # the app from looking at their data.
+                    logger.warning("Removing user's strava data")
                     remove_user_strava_data(site_user, True)
         elif aspect_type == "delete" :
             logger.warning("deleting existing activity")
