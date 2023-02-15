@@ -286,8 +286,10 @@ def remove_user_strava_data(user, deauthorized_strava=False) :
         su.is_strava_verified = False
         # Also remove the social auth record
         soc = user.social_auth
-        soc.delete()
+        strava_soc = soc.get(provider='strava')
+        strava_soc.delete()
     su.save()
+    
 
 @login_required
 def delete_strava_data(request) :
@@ -1193,16 +1195,18 @@ def async_handle(event) :
                 act.type=updates["type"]
                 act.sport_type=updates["type"]
             act.save()
+        elif aspect_type == "delete" :
+         #   logger.warning("deleting existing activity")
+            act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
+            act.delete()
+    elif object_type == "athlete" :
+        if aspect_type == "update" :
+            logger.warning("Got an athlete update webhook")
             if updates.get("authorized") :
                 logger.warning("Deauthorization")
                 if updates["authorizied"] == "false":
                     # We need to record that the user has deauthorized
                     # the app from looking at their data.
                     logger.warning("Removing user's strava data")
-                    remove_user_strava_data(site_user, True)
-        elif aspect_type == "delete" :
-         #   logger.warning("deleting existing activity")
-            act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
-            act.delete()
-                    
+                    remove_user_strava_data(site_user, True)                
     
