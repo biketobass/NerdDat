@@ -1204,7 +1204,7 @@ def async_handle(event) :
             logger.warning("Got an athlete update webhook")
             if updates.get("authorized") :
                 logger.warning("Deauthorization")
-                if updates["authorizied"] == "false":
+                if updates["authorized"] == "false":
                     # We need to record that the user has deauthorized
                     # the app from looking at their data.
                     logger.warning("Removing user's strava data")
