@@ -3,11 +3,11 @@ from django.contrib.auth.models import User
 
 class StravaUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    token_type = models.CharField(max_length=100)
-    access_token = models.CharField(max_length=200)
-    expires_at = models.PositiveIntegerField(default=1)
-    expires_in = models.PositiveIntegerField(default=1)
-    refresh_token = models.CharField(max_length=200)
+    #token_type = models.CharField(max_length=100)
+    #access_token = models.CharField(max_length=200)
+    #expires_at = models.PositiveIntegerField(default=1)
+    #expires_in = models.PositiveIntegerField(default=1)
+    #refresh_token = models.CharField(max_length=200)
     is_strava_verified = models.BooleanField(default=False)
     downloading = models.BooleanField(default=False)
     has_completed_initial_download = models.BooleanField(default=False)

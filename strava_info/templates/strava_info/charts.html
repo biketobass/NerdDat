@@ -21,17 +21,6 @@
                         {% endfor %}
                 </ul>
             </div>
-            {% comment %} <div class="dropdown">
-                <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Switch Timeframe
-                </a>
-              
-                <ul class="dropdown-menu">
-                        {% for tf in time_spans %}
-                            <li><a class="dropdown-item" href="{% url 'strava_info:charts' act_type metric tf %}">{{tf}}</a></li>
-                        {% endfor %}
-                </ul>
-            </div> {% endcomment %}
         </div>
     </div>
     <div class="row justify-content-start">
@@ -45,30 +34,6 @@
             </div>
         </div>
         <div class="col-1">
-            {% comment %} <div class="dropdown">
-                <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Switch Metric
-                </a>
-              
-                <ul class="dropdown-menu">
-                        {% for m in metrics %}
-                            <li><a class="dropdown-item" href="{% url 'strava_info:charts' act_type m %}">{{m}}</a></li>
-                        {% endfor %}
-                </ul>
-            </div>
-            <div class="dropdown">
-                <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Switch Timeframe
-                </a>
-              
-                <ul class="dropdown-menu">
-                        {% for tf in time_spans %}
-                            <li><a class="dropdown-item" href="{% url 'strava_info:charts' act_type metric tf %}">{{tf}}</a></li>
-                        {% endfor %}
-                </ul>
-            </div>
-            <p>Click on label to remove item from chart.</p>
-        </div> {% endcomment %}
     </div>
 </div>
 
