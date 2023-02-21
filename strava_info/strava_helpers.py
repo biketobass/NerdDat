@@ -772,7 +772,8 @@ def async_handle(event) :
     # Need to get the user with the owner_id.
     u_id = UserSocialAuth.objects.filter(provider="strava", uid=owner_id)[0].user_id
     site_user = User.objects.filter(id=u_id)[0]
-    strava_user = site_user.stravauser
+    strava_login = site_user.social_auth.get(provider='strava')
+    #strava_user = site_user.stravauser
     
     # Deal with activities 
     if object_type == "activity" :
@@ -786,7 +787,7 @@ def async_handle(event) :
             except requests.exceptions.RequestException as e :
                 raise(e)
             url = "https://www.strava.com/api/v3/activities/"+str(object_id)
-            payload = {'access_token': strava_user.access_token}
+            payload = {'access_token': strava_login.extra_data["access_toekn"]}
             try:
                 r = requests.get(url, params = payload)
             except requests.exceptions.RequestException as e:
