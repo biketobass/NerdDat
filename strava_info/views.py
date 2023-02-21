@@ -218,7 +218,7 @@ def analyze_activity_type(request, act_type) :
         year_dict["year"] = y
         context["year_list"].append(year_dict)
     
-    summary_dict = compute_metrics(all_acts, summary_dict)
+    summary_dict = compute_metrics(all_acts)
 
     context["summary"] = summary_dict
     if su.preferred_units == "imperial" :
