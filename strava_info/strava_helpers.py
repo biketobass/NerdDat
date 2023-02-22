@@ -787,7 +787,7 @@ def async_handle(event) :
             except requests.exceptions.RequestException as e :
                 raise(e)
             url = "https://www.strava.com/api/v3/activities/"+str(object_id)
-            payload = {'access_token': strava_login.extra_data["access_toekn"]}
+            payload = {'access_token': strava_login.extra_data["access_token"]}
             try:
                 r = requests.get(url, params = payload)
             except requests.exceptions.RequestException as e:
