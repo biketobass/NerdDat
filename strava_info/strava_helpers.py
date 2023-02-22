@@ -29,7 +29,7 @@ def save_strava_activity(result, the_user) :
     sa.name = result.get("name")
     sa.distance_meters = result.get("distance",0.0)
     sa.moving_time_sec = result.get("moving_time",0)
-    sa.elapsed_time_sec = result.get("elapsed_time")
+    sa.elapsed_time_sec = result.get("elapsed_time", 0)
     sa.total_elevation_gain_m = result.get("total_elevation_gain",0.0)
     sa.type = result.get("type", "Unknown")
     sa.sport_type = result.get("sport_type", "Unknown")
@@ -54,7 +54,7 @@ def save_strava_activity(result, the_user) :
     sa.average_heartrate = result.get("average_heartrate", 0.0)
     sa.max_heartrate = result.get("max_heartrate", 0.0)
     sa.suffer_score = result.get("suffer_score", 0.0)
-    sa.elapsed_time_min = result["elapsed_time"] / 60
+    sa.elapsed_time_min = result.get("elapsed_time",0) / 60
     sa.moving_time_min = result.get("moving_time", 0) / 60
     sa.elev_high_ft = result.get("elev_high", 0.0) * 3.28084
     sa.elev_low_ft = result.get('elev_low',0.0) * 3.28084
