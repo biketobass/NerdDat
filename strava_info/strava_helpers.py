@@ -520,7 +520,7 @@ def get_monthly_charts_data(request, act_type, metric) :
             scale_title = "Meters per month"
     
     acts_qs = StravaActivity.objects.filter(site_user=request.user)
-    acts_qs = acts_qs.filter(type=act_type)
+    acts_qs = acts_qs.filter(sport_type=act_type)
     start_year = acts_qs.aggregate(Min("start_date")).get("start_date__min").year
     end_year = acts_qs.aggregate(Max("start_date")).get("start_date__max").year
     labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -597,7 +597,7 @@ def get_annual_chart_data(request, act_type, metric) :
             scale_title = "Meters per year"
     
     acts_qs = StravaActivity.objects.filter(site_user=request.user)
-    acts_qs = acts_qs.filter(type=act_type)
+    acts_qs = acts_qs.filter(sport_type=act_type)
     start_year = acts_qs.aggregate(Min("start_date")).get("start_date__min").year
     end_year = acts_qs.aggregate(Max("start_date")).get("start_date__max").year
     labels = [ str(y) for y in range(start_year, end_year+1)]

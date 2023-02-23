@@ -201,7 +201,7 @@ def analyze_activity_type(request, act_type) :
     # Get the stravauser object associated with this user.
     su = request.user.stravauser
     # Get all of the user's Strava activites that are of this type.
-    all_acts = StravaActivity.objects.filter(site_user=request.user, type=act_type)
+    all_acts = StravaActivity.objects.filter(site_user=request.user, sport_type=act_type)
     # Get the first and last year, the user has been on Strava
     first_year = all_acts.aggregate(Min('start_date')).get('start_date__min').year
     last_year = all_acts.aggregate(Max('start_date')).get('start_date__max').year
