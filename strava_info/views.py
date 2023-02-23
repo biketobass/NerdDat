@@ -431,7 +431,7 @@ def pie_chart_data(request) :
     acts_qs = StravaActivity.objects.filter(site_user=request.user)
     # For each activity type sum the moving time for that activity and compute the percentage that is of the whole.
     all_moving_time = acts_qs.aggregate(Sum('moving_time_sec')).get('moving_time_sec__sum')
-    acts_qs = acts_qs.values("type").annotate(total_moving_time=Sum('moving_time_sec'))
+    acts_qs = acts_qs.values("sport_type").annotate(total_moving_time=Sum('moving_time_sec'))
     data=[]
     labels=[]
     colors = []
@@ -439,8 +439,8 @@ def pie_chart_data(request) :
     for a in acts_qs :
         perc = round((a['total_moving_time']/all_moving_time)*100)
         data.append(perc)
-        labels.append(a["type"])
-        colors.append(colors_dict[a["type"]])
+        labels.append(a["sport_type"])
+        colors.append(colors_dict[a["sport_type"]])
     return JsonResponse(data={
         'data' : data,
         'labels' : labels,
@@ -484,7 +484,7 @@ def annual_pie_chart_data(request, year) :
     acts_qs = StravaActivity.objects.filter(site_user=request.user, start_date__year=year)
     # For each activity type sum the moving time for that activity and compute the percentage that is of the whole.
     all_moving_time = acts_qs.aggregate(Sum('moving_time_sec')).get('moving_time_sec__sum')
-    acts_qs = acts_qs.values("type").annotate(total_moving_time=Sum('moving_time_sec'))
+    acts_qs = acts_qs.values("sport_type").annotate(total_moving_time=Sum('moving_time_sec'))
     data=[]
     labels=[]
     colors = []
@@ -495,8 +495,8 @@ def annual_pie_chart_data(request, year) :
         #data.append(round(a['total_moving_time']))
         perc = round((a['total_moving_time']/all_moving_time)*100)
         data.append(perc)
-        labels.append(a["type"])
-        colors.append(colors_dict[a["type"]])
+        labels.append(a["sport_type"])
+        colors.append(colors_dict[a["sport_type"]])
     return JsonResponse(data={
         'data' : data,
         'labels' : labels,
