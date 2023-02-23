@@ -410,11 +410,11 @@ def charts_data(request, act_type, metric, time_span) :
     
     if time_span == "annual" :
         resp = get_annual_chart_data(request, act_type, metric)
-        logger.warning("Annual bar req response = " + str(resp))
+        logger.warning("Annual bar req response = " + str(resp.data))
         return resp
     elif time_span == "monthly" :
         resp = get_monthly_charts_data(request, act_type, metric)
-        logger.warning("Monthly bar req response = " + str(resp))
+        logger.warning("Monthly bar req response = " + str(resp.data))
         return resp
     else :
         return None
