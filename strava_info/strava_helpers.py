@@ -97,7 +97,7 @@ def get_strava_activity_type_list(user) :
             su = user.stravauser
             if su.is_strava_verified and su.has_completed_initial_download :
                 all_acts = StravaActivity.objects.filter(site_user=user)
-                type_list = all_acts.values_list('type', flat=True).distinct()
+                type_list = all_acts.values_list('sport_type', flat=True).distinct()
         except StravaUser.DoesNotExist as e :
             pass
     return type_list
