@@ -598,7 +598,7 @@ def get_annual_chart_data(request, act_type, metric) :
     
     acts_qs = StravaActivity.objects.filter(site_user=request.user)
     acts_qs = acts_qs.filter(sport_type=act_type)
-    logger.warning("In annual " + acts_qs[0].moving_time_sec)
+    logger.warning("In annual " + str(acts_qs[0].moving_time_sec))
     start_year = acts_qs.aggregate(Min("start_date")).get("start_date__min").year
     end_year = acts_qs.aggregate(Max("start_date")).get("start_date__max").year
     labels = [ str(y) for y in range(start_year, end_year+1)]
