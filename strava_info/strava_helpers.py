@@ -795,6 +795,10 @@ def async_handle(event) :
             r = r.json()
         #    logger.warning("Got the new activity with dict = " + str(r))
             save_strava_activity(r, site_user)
+            # Also need to recompute pie chart colors because we may be
+            # downloading an activity we haven't seen before.
+            site_user.stravauser.pie_color_palette = compute_pie_colors(site_user)
+            site_user.stravauser.save()
         elif aspect_type == "update" :
         #    logger.warning("update to existing event")
             act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
