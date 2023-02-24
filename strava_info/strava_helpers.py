@@ -598,7 +598,6 @@ def get_annual_chart_data(request, act_type, metric) :
     
     acts_qs = StravaActivity.objects.filter(site_user=request.user)
     acts_qs = acts_qs.filter(sport_type=act_type)
-    logger.warning("In annual " + str(acts_qs[0].moving_time_sec))
     start_year = acts_qs.aggregate(Min("start_date")).get("start_date__min").year
     end_year = acts_qs.aggregate(Max("start_date")).get("start_date__max").year
     labels = [ str(y) for y in range(start_year, end_year+1)]
@@ -613,6 +612,7 @@ def get_annual_chart_data(request, act_type, metric) :
             acts_qs = acts_qs.values("start_date__year").annotate(metric_per_year=Sum('distance_km')).order_by('start_date__year')
     elif metric == "moving_time" :
         acts_qs = acts_qs.values("start_date__year").annotate(metric_per_year=Sum('moving_time_sec')/3600).order_by('start_date__year')
+        logger.warning("here's the dict: " + str(acts_qs))
     elif metric == "elevation_gain" :
         if request.user.stravauser.preferred_units == "imperial" :
             acts_qs = acts_qs.values("start_date__year").annotate(metric_per_year=Sum('elev_gain_ft')).order_by('start_date__year')
