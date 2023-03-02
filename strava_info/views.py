@@ -19,6 +19,7 @@ import logging
 import json
 from .strava_helpers import download_strava_data, remove_user_strava_data, compute_metrics, compute_pie_colors, get_strava_activity_type_list, suggest_similar_activities, check_and_refresh_access_token, save_strava_activity, save_strava_data, get_monthly_charts_data, get_annual_chart_data, get_base_context, send_strava_webhook_subscription_request, async_handle
 
+logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def index(request) :
