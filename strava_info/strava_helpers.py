@@ -613,7 +613,7 @@ def get_annual_chart_data(request, act_type, metric) :
             acts_qs = acts_qs.values("start_date__year").annotate(metric_per_year=Sum('distance_km')).order_by('start_date__year')
     elif metric == "moving_time" :
         acts_qs = acts_qs.values("start_date__year").annotate(metric_per_year=Sum('moving_time_sec')/3600).order_by('start_date__year')
-        logger.warning("here's the dict: " + str(acts_qs))
+        logger.debug("here's the dict: " + str(acts_qs))
     elif metric == "elevation_gain" :
         if request.user.stravauser.preferred_units == "imperial" :
             acts_qs = acts_qs.values("start_date__year").annotate(metric_per_year=Sum('elev_gain_ft')).order_by('start_date__year')
@@ -724,17 +724,17 @@ def send_strava_webhook_subscription_request() :
             'callback_url' : callback_url,
             'verify_token' : verify_token}
     try :
-        #logger.warning("Subscribe: Sending subscription request")
+        logger.debug("Subscribe: Sending subscription request")
         response = requests.post(url=subscribe_url, 
                                 data=payload)
-        #logger.warning("Subscribe: Got a response")
+        logger.debug("Subscribe: Got a response")
     except requests.exceptions.RequestException as e :
         raise(e)
     else :
         # Now get the subscription id and save the subscription
         # to the database.
         r = response.json()
-        #logger.warning("Subscribe got this reponse " + str(r))
+        logger.debug("Subscribe got this reponse " + str(r))
         if not r.get("errors") :
             sub = WebhookSubscription()
             sub.service = "Strava"
@@ -780,9 +780,9 @@ def async_handle(event) :
     # Deal with activities 
     if object_type == "activity" :
         # Deal with creating a new activity.
-        logger.warning("Dealing with an activity update")
+        logger.debug("Dealing with an activity update")
         if aspect_type == "create" :
-            logger.warning("New event created at Strava")
+            logger.debug("New event created at Strava")
             # Get the new activity.
             # try :
             #     check_and_refresh_access_token(site_user)
@@ -806,9 +806,9 @@ def async_handle(event) :
                     time.sleep(6)
                 else :
                     break
-            logger.warning("Got the new activity with dict = " + str(r))
+            logger.debug("Got the new activity with dict = " + str(r))
             if not r.get("id") :
-                logger.warning("Handling still got a null id. Not saving the activity.")
+                logger.debug("Handling still got a null id. Not saving the activity.")
             else :
                 save_strava_activity(r, site_user)
                 # Also need to recompute pie chart colors because we may be
@@ -816,7 +816,7 @@ def async_handle(event) :
                 site_user.stravauser.pie_color_palette = compute_pie_colors(site_user)
                 site_user.stravauser.save()
         elif aspect_type == "update" :
-        #    logger.warning("update to existing event")
+            logger.debug("update to existing event")
             act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
             if updates.get("title") :
                 # Get the currently saved version of this activity
@@ -826,17 +826,17 @@ def async_handle(event) :
                 act.sport_type=updates["type"]
             act.save()
         elif aspect_type == "delete" :
-         #   logger.warning("deleting existing activity")
+            logger.debug("deleting existing activity")
             act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
             act.delete()
     elif object_type == "athlete" :
         if aspect_type == "update" :
-            logger.warning("Got an athlete update webhook")
+            logger.debug("Got an athlete update webhook")
             if updates.get("authorized") :
-                logger.warning("Deauthorization")
+                logger.debug("Deauthorization")
                 if updates["authorized"] == "false":
                     # We need to record that the user has deauthorized
                     # the app from looking at their data.
-                    logger.warning("Removing user's strava data")
+                    logger.debug("Removing user's strava data")
                     remove_user_strava_data(site_user, True)                
     

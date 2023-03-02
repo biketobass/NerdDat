@@ -411,11 +411,11 @@ def charts_data(request, act_type, metric, time_span) :
     
     if time_span == "annual" :
         resp = get_annual_chart_data(request, act_type, metric)
-        logger.warning("Annual bar req response = " + str(resp.content))
+        logger.debug("Annual bar req response = " + str(resp.content))
         return resp
     elif time_span == "monthly" :
         resp = get_monthly_charts_data(request, act_type, metric)
-        logger.warning("Monthly bar req response = " + str(resp.content))
+        logger.debug("Monthly bar req response = " + str(resp.content))
         return resp
     else :
         return None
@@ -537,7 +537,7 @@ def subscribe_to_strava_webhooks(request) :
     
     # Only let a superuser do this.
     if request.user.is_superuser :
-        #logger.warning("Subscribe starting thread.")
+        logger.debug("Subscribe starting thread.")
         t = threading.Thread(target=send_strava_webhook_subscription_request)
         t.setDaemon(True)
         t.start()
@@ -593,25 +593,25 @@ def handle_strava_webhook(request) :
         HttpResponse: response to the webhook
     """
     
-    #logger.warning("Handle webhook got this request " + str(request))
+    logger.debug("Handle webhook got this request " + str(request))
     if request.method == "GET" :
         # We're dealing with a response to our request for a
         # subscription. These are the only GET requests
         # Strava webhooks will make.
         validation_req = request.GET
-        logger.warning("handle: validation_req is " + str(validation_req))
+        logger.debug("handle: validation_req is " + str(validation_req))
         mode = validation_req["hub.mode"]
         challenge = validation_req["hub.challenge"]
         hub_token = validation_req["hub.verify_token"]
-        logger.warning("mode = " + mode + " challenge = " + challenge + " hub_token = " + hub_token)
+        logger.debug("mode = " + mode + " challenge = " + challenge + " hub_token = " + hub_token)
         if (mode and hub_token) :
             if (hub_token == settings.STRAVA_SUB_VERIFY_TOKEN and
                 mode == "subscribe") :
                 response_data = {"hub.challenge":challenge}
                 json_response = JsonResponse(data=response_data)
-                logger.warning("handle sending this json response " + str(json_response))
+                logger.debug("handle sending this json response " + str(json_response))
                 return json_response
-        logger.warning("handle sending forbidden")
+        logger.debug("handle sending forbidden")
         return HttpResponseForbidden("not allowed")
     else :
         # We're dealing with a post which is an indication of
@@ -620,9 +620,9 @@ def handle_strava_webhook(request) :
         sub_id = all_subs[0].sub_id
         #event = request.POST
         event = json.loads(request.body)
-        logger.warning("  body = " + str(event))
+        logger.debug("  body = " + str(event))
         if not event.get("subscription_id") or event["subscription_id"] != sub_id :
-            logger.warning("Handle not allowing")
+            logger.debug("Handle not allowing")
             return HttpResponseForbidden("Post not allowed")
         # We've come this far so handle the webhook.
         t = threading.Thread(target=async_handle, args=[event])
