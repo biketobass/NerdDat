@@ -781,25 +781,39 @@ def async_handle(event) :
         # Deal with creating a new activity.
         logger.warning("Dealing with an activity update")
         if aspect_type == "create" :
-        #    logger.warning("New event created at Strava")
+            logger.warning("New event created at Strava")
             # Get the new activity.
-            try :
-                check_and_refresh_access_token(site_user)
-            except requests.exceptions.RequestException as e :
-                raise(e)
+            # try :
+            #     check_and_refresh_access_token(site_user)
+            # except requests.exceptions.RequestException as e :
+            #     raise(e)
             url = "https://www.strava.com/api/v3/activities/"+str(object_id)
             payload = {'access_token': strava_login.extra_data["access_token"]}
-            try:
-                r = requests.get(url, params = payload)
-            except requests.exceptions.RequestException as e:
-                raise(e)
-            r = r.json()
-        #    logger.warning("Got the new activity with dict = " + str(r))
-            save_strava_activity(r, site_user)
-            # Also need to recompute pie chart colors because we may be
-            # downloading an activity we haven't seen before.
-            site_user.stravauser.pie_color_palette = compute_pie_colors(site_user)
-            site_user.stravauser.save()
+            # If we make the request very quickly after receiving the webhook,
+            # we get an invalid response that has a null activity id.
+            # If that happens, wait 6 seconds and try again. Try that at most 10 times.
+            # That's just an arbitary amount of time on my part.
+            for i in range(0,10) :
+                try:
+                    check_and_refresh_access_token(site_user)
+                    r = requests.get(url, params = payload)
+                except requests.exceptions.RequestException as e:
+                    raise(e)
+                r = r.json()
+                if not r.get("id") :
+                    # Wait 6 seconds and try again
+                    time.sleep(6)
+                else :
+                    break
+            logger.warning("Got the new activity with dict = " + str(r))
+            if not r.get("id") :
+                logger.warning("Handling still got a null id. Not saving the activity.")
+            else :
+                save_strava_activity(r, site_user)
+                # Also need to recompute pie chart colors because we may be
+                # downloading an activity we haven't seen before.
+                site_user.stravauser.pie_color_palette = compute_pie_colors(site_user)
+                site_user.stravauser.save()
         elif aspect_type == "update" :
         #    logger.warning("update to existing event")
             act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
