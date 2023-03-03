@@ -197,7 +197,7 @@ def check_and_refresh_access_token(user) :
     """
     strava_soc = user.social_auth.get(provider='strava')
     # See if the access token has expired.
-    logger.debug("Checking is we need new tokens")
+    logger.debug("Checking if we need new tokens")
     if strava_soc.extra_data['expires_at'] < time.time():
         logger.debug("We do.")
         # It has expired.
@@ -764,22 +764,8 @@ def async_handle(event) :
                                 # (activity visibility set to Followers Only or Everyone). For app deauthorization events,
                                 # there is always an "authorized" : "false" key-value pair.
     # Check if any of those are None
-    # if not aspect_type :
-    #     logger.warning("aspect_type is None.")
-    # if not object_id :
-    #     logger.warning("object_id is None.")
-    # if not object_type :
-    #     logger.warning("object_type is None.")
-    # if not owner_id :
-    #     logger.warning("owner_id is None.")
-    # if not updates :
-    #     logger.warning("updates is None.")
-    # Check tokens.
-    # Need to get the user with the owner_id.
     u_id = UserSocialAuth.objects.filter(provider="strava", uid=owner_id)[0].user_id
     site_user = User.objects.filter(id=u_id)[0]
-    strava_login = site_user.social_auth.get(provider='strava')
-    #strava_user = site_user.stravauser
     
     # Deal with activities 
     if object_type == "activity" :
@@ -790,6 +776,9 @@ def async_handle(event) :
             # Get the new activity.
             try:
                 check_and_refresh_access_token(site_user)
+                # We need to get the social auth info after checking the access token.
+                # Otherwise, it might have stale data.
+                strava_login = site_user.social_auth.get(provider='strava')
                 url = "https://www.strava.com/api/v3/activities/"+str(object_id)
                 payload = {'access_token': strava_login.extra_data["access_token"]}
                 r = requests.get(url, params = payload)
