@@ -806,8 +806,14 @@ def async_handle(event) :
             act.save()
         elif aspect_type == "delete" :
             logger.debug("deleting existing activity")
-            act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
-            act.delete()
+            try :
+                act = StravaActivity.objects.get(site_user=site_user, activity_id=object_id)
+            except StravaActivity.DoesNotExist as e :
+                # If the activity does not exit, log it, but don't worry.
+                logger.debug("Tried to delete an activity that doesn't exist.")
+            else :
+                # Delete the activity
+                act.delete()
     elif object_type == "athlete" :
         if aspect_type == "update" :
             logger.debug("Got an athlete update webhook")
