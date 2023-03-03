@@ -788,28 +788,14 @@ def async_handle(event) :
         if aspect_type == "create" :
             logger.debug("New event created at Strava")
             # Get the new activity.
-            # try :
-            #     check_and_refresh_access_token(site_user)
-            # except requests.exceptions.RequestException as e :
-            #     raise(e)
-            url = "https://www.strava.com/api/v3/activities/"+str(object_id)
-            payload = {'access_token': strava_login.extra_data["access_token"]}
-            # If we make the request very quickly after receiving the webhook,
-            # we get an invalid response that has a null activity id.
-            # If that happens, wait 6 seconds and try again. Try that at most 10 times.
-            # That's just an arbitary amount of time on my part.
-            for i in range(0,10) :
-                try:
-                    check_and_refresh_access_token(site_user)
-                    r = requests.get(url, params = payload)
-                except requests.exceptions.RequestException as e:
-                    raise(e)
-                r = r.json()
-                if not r.get("id") :
-                    # Wait 6 seconds and try again
-                    time.sleep(6)
-                else :
-                    break
+            try:
+                check_and_refresh_access_token(site_user)
+                url = "https://www.strava.com/api/v3/activities/"+str(object_id)
+                payload = {'access_token': strava_login.extra_data["access_token"]}
+                r = requests.get(url, params = payload)
+            except requests.exceptions.RequestException as e:
+                raise(e)
+            r = r.json()
             logger.debug("Got the new activity with dict = " + str(r))
             if not r.get("id") :
                 logger.debug("Handling still got a null id. Not saving the activity.")
