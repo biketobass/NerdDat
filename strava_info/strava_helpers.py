@@ -197,7 +197,9 @@ def check_and_refresh_access_token(user) :
     """
     strava_soc = user.social_auth.get(provider='strava')
     # See if the access token has expired.
+    logger.debug("Checking is we need new tokens")
     if strava_soc.extra_data['expires_at'] < time.time():
+        logger.debug("We do.")
         # It has expired.
         # Make Strava auth API call with current refresh token
         # and get the response that has the new token.
@@ -222,6 +224,8 @@ def check_and_refresh_access_token(user) :
         strava_soc.extra_data["expires"] = tokens['expires_in']
         strava_soc.extra_data["refresh_token"] = tokens['refresh_token']
         strava_soc.save()
+        logger.debug("new refresh token in strava_soc = " + strava_soc.extra_data["refresh_token"])
+        logger.debug("in tokens it is " + tokens["refresh_token"])
         # stravauser.token_type = tokens["token_type"]
         # stravauser.access_token = tokens['access_token']
         # stravauser.expires_at = tokens['expires_at']
