@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 import logging
 
-logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG)
+#logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def save_strava_activity(result, the_user) :

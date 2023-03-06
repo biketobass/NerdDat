@@ -174,18 +174,20 @@ LOGGING = {
     'disable_existing_loggers': False,  # retain the default loggers
     'formatters': {
         'timestamp': {
-            'format': '{asctime} {levelname} {message}',
+            'format': '{name} {levelname} {asctime} {module} {process:d} {thread:d}',
             'style': '{',
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'timestamp'
+            'formatter': 'timestamp',
+            'level' :'DEBUG'
         },
     },
     'loggers': {
-        'django': {
+        '': {
+            'level' :'DEBUG',
             'handlers': ['console'],
         },
     },
