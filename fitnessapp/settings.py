@@ -174,7 +174,7 @@ LOGGING = {
     'disable_existing_loggers': False,  # retain the default loggers
     'formatters': {
         'timestamp': {
-            'format': '{name} {levelname} {asctime} {module} {process:d} {thread:d}',
+            'format': '{name} {levelname} {asctime} {module} {process:d} {thread:d} {message}',
             'style': '{',
         },
     },
@@ -182,7 +182,7 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'timestamp',
-            'level' :'DEBUG'
+            'level' :'DEBUG',
         },
     },
     'loggers': {
