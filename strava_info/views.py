@@ -57,6 +57,8 @@ def index(request) :
                 # Now see if we have have created a stravauser yet for the user.
                 try :
                     su = user.stravauser
+                    #It's possible that the user deauthorized and then reauthorized.
+                    su.is_strava_verified = True
                 except StravaUser.DoesNotExist as e :
                     # We haven't created one yet, so do so and
                     # set the verified flag to true.
