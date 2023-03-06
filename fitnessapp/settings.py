@@ -182,12 +182,12 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'timestamp',
-            'level' :'DEBUG',
+            'level' : env('LOG_LEVEL'),
         },
     },
     'loggers': {
         '': {
-            'level' :'DEBUG',
+            'level' : env('LOG_LEVEL'),
             'handlers': ['console'],
         },
     },
