@@ -45,7 +45,7 @@ def index(request) :
             soc = user.social_auth
             strava_login = soc.get(provider='strava')
         except UserSocialAuth.DoesNotExist as e :
-            # We know the user hasn't been through the OAuth process since
+            # We know the user hasn't been through the OAuth process
             # because we triggered the exception. No need to do anything.
             pass
         else :

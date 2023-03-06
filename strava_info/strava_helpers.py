@@ -319,7 +319,9 @@ def remove_user_strava_data(user, deauthorized_strava=False) :
     su.has_completed_initial_download = False
     # Remove stored Strava authorization info if the user has revoked access.
     if deauthorized_strava :
-        su.is_strava_verified = False
+        # Delete the stravauser.
+        su.delete()
+        #su.is_strava_verified = False
         # Also remove the social auth record
         soc = user.social_auth
         strava_soc = soc.get(provider='strava')
