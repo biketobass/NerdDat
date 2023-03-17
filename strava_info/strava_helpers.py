@@ -26,7 +26,7 @@ def save_strava_activity(result, the_user) :
     """
     # Check if the activity already exists. If so, delete
     # it and save the new activity.
-    #StravaActivity.objects.filter(site_user=the_user, activity_id=result.get("id")).delete()
+    StravaActivity.objects.filter(site_user=the_user, activity_id=result.get("id")).delete()
     
     # Now create the new StravaActivity and save it.
     sa = StravaActivity()
