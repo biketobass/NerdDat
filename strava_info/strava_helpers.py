@@ -24,6 +24,11 @@ def save_strava_activity(result, the_user) :
         result (dict): Json data for a single activity obtained from a call to the Strava API
         the_user (User): The user associated with the Strava activity
     """
+    # Check if the activity already exists. If so, delete
+    # it and save the new activity.
+    StravaActivity.objects.filter(site_user=the_user, activity_id=result.get("id")).delete()
+    
+    # Now create the new StravaActivity and save it.
     sa = StravaActivity()
     sa.site_user = the_user
     sa.activity_id = result.get("id")
